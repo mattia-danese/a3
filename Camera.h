@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 
 const float EPSILON = 1e-20;
@@ -17,31 +18,9 @@ const float EPSILON = 1e-20;
 class Camera {
 public:
 	float rotU, rotV, rotW;  //values used by the callback in main.cpp
-	glm::vec3 u;
-	glm::vec3 v;
-	glm::vec3 w;
-	glm::vec3 eye;
-	glm::mat4x4 scale;
-	glm::mat4x4 rotate;
-	glm::mat4x4 rotate_inverse;
-	glm::mat4x4 translate;
-	glm::mat4x4 translate_inverse;
-	glm::mat4x4 m_pp;
-	glm::mat4x4 model_view_matrix;
-	glm::mat4x4 projection_matrix;
-	glm::vec3 lookVec;
-	glm::vec3 upVec;
-
 
 	Camera();
 	~Camera();
-
-
-	glm::vec3 cross_product_n(glm::vec3 first, glm::vec3 second);
-	glm::vec3 cross_product(glm::vec3 first, glm::vec3 second);
-	glm::mat4 multiply_matrix(glm::mat4 m1, glm::mat4 m2);
-	glm::vec4 multiply_vector(glm::mat4 m, glm::vec4 p);
-	void calculate_matrices();
 
 	void reset();
 	void orientLookAt(glm::vec3 eyePoint, glm::vec3 focusPoint, glm::vec3 upVec);
@@ -62,8 +41,9 @@ public:
 	void rotateV(float degree);
 	void rotateU(float degree);
 	void rotateW(float degree);
-	//void rotate(glm::vec3 point, glm::vec3 axis, float degree);
-	//void translate(glm::vec3 v);
+	void rotate(glm::vec3 point, glm::vec3 axis, float degree);
+
+	void translate(glm::vec3 v);
 
 	glm::vec3 getEyePoint();
 	glm::vec3 getLookVector();
@@ -77,12 +57,12 @@ public:
 	float getFilmPlanDepth();
 	float getScreenWidthRatio();
 
-
 private:
 	float viewAngle, filmPlanDepth;
-	float nearPlane, farPlane;
+	float nearPlane, farPlane = 1.0f;
 	int screenWidth, screenHeight;
 	float screenWidthRatio;
+    glm::vec3 eyePoint;
+    glm::mat4 basis;
 };
 #endif
-
