@@ -1,0 +1,235 @@
+<scenefile>
+  <globaldata>
+    <diffusecoeff v="0.5"/>
+    <specularcoeff v="0.5"/>
+    <ambientcoeff v="0.5"/>
+  </globaldata>
+  
+  <lightdata>
+    <id v="0"/>
+    <color r="1" g="1" b="1"/>
+    <position x="4" y="4" z="4"/>
+  </lightdata>
+  
+  <cameradata>
+    <pos x="5" y="5" z="5"/>
+    <focus x="2" y="1" z="1"/>
+    <up x="0" y="1" z="0"/>
+    <heightangle v="60"/>
+  </cameradata>
+  
+  <object type="tree" name="root">
+
+    <transblock> <!-- scale from mm to box between (0,0) and (4,2) in xz-plane -->
+      <scale x="0.125" y="0.125" z="0.125"/>
+      <object type="tree">
+
+        <!-- <transblock>  <!-\- entire brick body, centered at corner, scaled to mm -\-> -->
+        <!--   <scale x="32" y="9.6" z="16"/> -->
+        <!--   <translate x="0.5" y="0.5" z="0.5"/> -->
+        <!--   <object type="primitive" name="cube"> -->
+        <!--     <diffuse r="1" g="0" b="0"/> -->
+        <!--   </object> -->
+        <!-- </transblock> -->
+
+        <transblock> <!-- short wall 1 -->
+          <translate x="0" y="0" z="1.2"/>
+          <object type="tree">
+            <transblock> <!-- single short wall, centered at lower corner, in mm -->
+              <scale x="1.2" y="8.6" z="13.6"/>
+              <translate x="0.5" y="0.5" z="0.5"/>
+              <object type="primitive" name="cube">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- short wall 2 -->
+          <translate x="30.8" y="0" z="1.2"/>
+          <object type="tree">
+            <transblock> <!-- single short wall, centered at lower corner, in mm -->
+              <scale x="1.2" y="8.6" z="13.6"/>
+              <translate x="0.5" y="0.5" z="0.5"/>
+              <object type="primitive" name="cube">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+
+        <transblock> <!-- long wall 1 -->
+          <translate x="0" y="0" z="0"/>
+          <object type="tree">
+            <transblock> <!-- single short wall, centered at lower corner, in mm -->
+              <scale x="32" y="8.6" z="1.2"/>
+              <translate x="0.5" y="0.5" z="0.5"/>
+              <object type="primitive" name="cube">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- long wall 2 -->
+          <translate x="0" y="0" z="14.8"/>
+          <object type="tree">
+            <transblock> <!-- single short wall, centered at lower corner, in mm -->
+              <scale x="32" y="8.6" z="1.2"/>
+              <translate x="0.5" y="0.5" z="0.5"/>
+              <object type="primitive" name="cube">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+
+        <transblock> <!-- top of brick -->
+          <translate x="0" y="8.6" z="0"/>
+          <scale x="32" y="1" z="16"/>
+          <translate x="0.5" y="0.5" z="0.5"/>
+          <object type="primitive" name="cube">
+            <diffuse r="1" g="0" b="0"/>
+          </object>
+        </transblock>
+
+        <transblock> <!-- coupling 1 -->
+          <translate x="8" y="0" z="8"/>
+          <object type="tree">
+            <transblock> <!-- single coupling, centered at base, scaled in mm  -->
+              <scale x="6.5" y="8.6" z="6.5"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- coupling 2 -->
+          <translate x="16" y="0" z="8"/>
+          <object type="tree">
+            <transblock> <!-- single coupling, centered at base, scaled in mm  -->
+              <scale x="6.5" y="8.6" z="6.5"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- coupling 3 -->
+          <translate x="24" y="0" z="8"/>
+          <object type="tree">
+            <transblock> <!-- single coupling, centered at base, scaled in mm  -->
+              <scale x="6.5" y="8.6" z="6.5"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        
+        <transblock> <!-- stud 1.1 -->
+          <translate x="4" y="9.6" z="4"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- stud 1.2 -->
+          <translate x="4" y="9.6" z="12"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- stud 2.1 -->
+          <translate x="12" y="9.6" z="4"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- stud 2.2 -->
+          <translate x="12" y="9.6" z="12"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- stud 3.1 -->
+          <translate x="20" y="9.6" z="4"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- stud 3.2 -->
+          <translate x="20" y="9.6" z="12"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- stud 4.1 -->
+          <translate x="28" y="9.6" z="4"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+        <transblock> <!-- stud 4.2 -->
+          <translate x="28" y="9.6" z="12"/>
+          <object type="tree">
+            <transblock> <!-- single stud, origin at center of base, scaled in mm -->
+              <scale x="4.8" y="1.8" z="4.8"/>
+              <translate x="0" y="0.5" z="0"/>
+              <object type="primitive" name="cylinder">
+                <diffuse r="1" g="0" b="0"/>
+              </object>
+            </transblock>
+          </object>
+        </transblock>
+
+
+      </object>
+
+    </transblock>
+  </object>
+  
+</scenefile>
+

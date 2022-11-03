@@ -1,0 +1,359 @@
+<scenefile>
+	<globaldata>
+		<diffusecoeff v="0.5" />
+		<specularcoeff v="0.5" />
+		<ambientcoeff v="0.5" />
+	</globaldata>
+
+	<cameradata>
+		<pos x="-2" y="-0.4" z="5" />
+		<up x="0" y="1" z="0" />
+		<focus x="0" y="2.5" z="0" />
+		<heightangle v="50" />
+	</cameradata>
+
+	<!-- HIGHLIGHT LIGHTS -->
+	<lightdata>
+		<id v="0" />
+		<color r="0.6" g="0.1" b="0" />
+		<function v1="1" v2="0.3" v3="0.5" />
+		<position x="1" y="0.4" z="0" />
+	</lightdata>
+
+	<lightdata>
+		<id v="1" />
+		<color r="0.6" g="0.1" b="0" />
+		<function v1="2" v2="0.3" v3="0.5" />
+		<position x="-1" y="0.4" z="0" />
+	</lightdata>
+
+	<lightdata>
+		<id v="2" />
+		<color r="0.6" g="0.1" b="0" />
+		<function v1="2" v2="0.3" v3="0.5" />
+		<position x="0" y="0.4" z="0.5" />
+	</lightdata>
+
+	<lightdata>
+		<id v="3" />
+		<color r="0.6" g="0.1" b="0" />
+		<function v1="2" v2="0.3" v3="0.5" />
+		<position x="0" y="0.4" z="-0.5" />
+	</lightdata>
+
+	<lightdata>
+		<id v="4" />
+		<color r="0.9" g="0.9" b="1" />
+		<function v1="0.1" v2="0.3" v3="1" />
+		<position x="2" y="3" z="-2" />
+	</lightdata>
+
+	<!-- SCENE LIGHTS -->
+	<lightdata>
+		<id v="5" />
+		<color r="0.9" g="0.9" b="1" />
+		<function v1="0.1" v2="0.3" v3="0" />
+		<position x="-3" y="2" z="-2" />
+	</lightdata>
+
+	<lightdata>
+		<id v="6" />
+		<color r="1" g="0.95" b="0.9" />
+		<function v1="0.1" v2="1" v3="0" />
+		<position x="1" y="2" z="5" />
+	</lightdata>
+
+	<object type="tree" name="ROCKET">
+		<transblock>
+			<translate x="0" y="-0.02" z="0" />
+			<scale x="0.07" y="0.1" z="0.07" />
+			<object type="primitive" name="cone">
+				<diffuse r="0.5" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+		<transblock>
+			<scale x="0.03" y="0.02" z="0.03" />
+			<object type="primitive" name="sphere">
+				<diffuse r="0.6" g="0.6" b="0.6" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="-0.04" z="0" />
+			<scale x="0.046" y="0.01" z="0.046" />
+			<object type="primitive" name="cylinder">
+				<diffuse r="0.2" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+	</object>
+
+	<object type="tree" name="fin">
+		<transblock>
+			<translate x="0" y="0.7" z="0.13" />
+			<scale x="0.18" y="1.4" z="0.1" />
+			<object type="primitive" name="cone">
+				<diffuse r="0.07" g="0.07" b="0.07" />
+			</object>
+		</transblock>
+	</object>
+
+	<object type="tree" name="boosters">
+		<transblock>
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="0" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="45" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="90" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="135" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="180" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="225" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="270" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="315" />
+			<translate x="0.1" y="0" z="0" />
+			<object type="master" name="ROCKET" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="45" />
+			<translate x="0" y="0" z="0" />
+			<object type="master" name="fin" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="135" />
+			<translate x="0" y="0" z="0" />
+			<object type="master" name="fin" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="225" />
+			<translate x="0" y="0" z="0" />
+			<object type="master" name="fin" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="315" />
+			<translate x="0" y="0" z="0" />
+			<object type="master" name="fin" />
+		</transblock>
+	</object>
+
+	<object type="tree" name="body">
+		<transblock>
+			<translate x="0" y="2" z="0" />
+			<scale x="0.3" y="4" z="0.3" />
+			<object type="primitive" name="cylinder">
+				<diffuse r="0.8" g="0.8" b="0.8" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="3.9" z="0" />
+			<rotate x="1" y="0" z="0" angle="180" />
+			<scale x="0.4" y="0.3" z="0.4" />
+			<object type="primitive" name="cone">
+				<diffuse r="0.8" g="0.8" b="0.8" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="4.35" z="0" />
+			<scale x="0.4" y="0.6" z="0.4" />
+			<object type="primitive" name="cylinder">
+				<diffuse r="0.8" g="0.8" b="0.8" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="4.65" z="0" />
+			<scale x="0.4" y=".8" z="0.4" />
+			<object type="primitive" name="sphere">
+				<diffuse r="0.8" g="0.8" b="0.8" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="0" z="0" />
+			<object type="master" name="boosters" />
+		</transblock>
+	</object>
+
+	<object type="tree" name="side">
+		<transblock>
+			<translate x="0" y="1.5" z="0" />
+			<scale x="0.3" y="3" z="0.3" />
+			<object type="primitive" name="cylinder">
+				<diffuse r="0.8" g="0.8" b="0.8" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="3" z="0" />
+			<scale x="0.3" y=".8" z="0.3" />
+			<object type="primitive" name="sphere">
+				<diffuse r="0.8" g="0.8" b="0.8" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="0" z="0" />
+			<object type="master" name="boosters" />
+		</transblock>
+		<transblock>
+			<translate x="-0.2" y="2.9" z="0" />
+			<scale x="0.2" y="0.05" z="0.05" />
+			<object type="primitive" name="cube">
+				<diffuse r="0.2" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="-0.2" y="1" z="0" />
+			<scale x="0.2" y="0.05" z="0.05" />
+			<object type="primitive" name="cube">
+				<diffuse r="0.2" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+	</object>
+
+	<object type="tree" name="falcon">
+		<transblock>
+			<object type="master" name="body" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="0" />
+			<translate x="0.34" y="0" z="0" />
+			<object type="master" name="side" />
+		</transblock>
+		<transblock>
+			<rotate x="0" y="1" z="0" angle="180" />
+			<translate x="0.34" y="0" z="0" />
+			<object type="master" name="side" />
+		</transblock>
+	</object>
+
+	<object type="tree" name="star">
+		<transblock>
+			<scale x="0.05" y="0.05" z="0.05" />
+			<object type="primitive" name="sphere">
+				<ambient r="6" g="6" b="6" />
+			</object>
+		</transblock>
+	</object>
+
+	<object type="tree" name="backplane">
+		<transblock>
+			<translate x="0" y="2.5" z="0" />
+			<scale x="0.3" y="3" z="0.06" />
+			<object type="primitive" name="cube">
+				<diffuse r="0.2" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0.4" y="0.5" z="0" />
+			<rotate x="0" y="0" z="1" angle="30" />
+			<scale x="0.1" y="1.3" z="0.06" />
+			<object type="primitive" name="cube">
+				<diffuse r="0.2" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="-0.4" y="0.5" z="0" />
+			<rotate x="0" y="0" z="1" angle="-30" />
+			<scale x="0.1" y="1.3" z="0.06" />
+			<object type="primitive" name="cube">
+				<diffuse r="0.2" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="3" z="0.1" />
+			<scale x="0.05" y="0.05" z="0.25" />
+			<object type="primitive" name="cube">
+				<diffuse r="0.2" g="0.2" b="0.2" />
+			</object>
+		</transblock>
+	</object>
+
+	<object type="tree" name="root">
+		<transblock>
+			<translate x="0" y="0.2" z="0" />
+			<object type="master" name="falcon" />
+		</transblock>
+		<transblock>
+			<translate x="0" y="0" z="-0.35" />
+			<object type="master" name="backplane" />
+		</transblock>
+		<transblock>
+			<translate x="0" y="-0.25" z="0" />
+			<scale x="2" y="0.5" z="2" />
+			<object type="primitive" name="cube">
+				<diffuse r="0.5" g="0.5" b="0.5" />
+			</object>
+		</transblock>
+		<transblock>
+			<scale x="20" y="20" z="20" />
+			<object type="primitive" name="cube">
+				<ambient r="0.45" g="0.4" b="1" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="5.5" y="9" z="-3" />
+			<object type="primitive" name="sphere">
+				<ambient r="2.2" g="2.2" b="2.2" />
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="8.90" y="9" z="-9.45" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="7.45" y="9" z="-1.90" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="-4.26" y="9" z="-7.03" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="3.64" y="9" z="-3.60" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="0.64" y="9" z="-7.41" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="-2.46" y="9" z="-4.99" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="-5.86" y="9" z="-5.43" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="-6.13" y="9" z="-8.25" />
+			<object type="master" name="star" />
+		</transblock>
+		<transblock>
+			<translate x="-1.57" y="9" z="-9.23" />
+			<object type="master" name="star" />
+		</transblock>
+	</object>
+</scenefile>

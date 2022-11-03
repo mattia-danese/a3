@@ -1,0 +1,79 @@
+<scenefile>
+    <globaldata>
+        <diffusecoeff v="1.0"/>
+        <specularcoeff v="1.0"/>
+        <ambientcoeff v="1.0"/>
+    </globaldata>
+
+
+    <lightdata>
+        <id v="0"/>
+        <color r="1" g="1" b="1"/>
+        <position x="3" y="3" z="3"/>
+    </lightdata>
+
+    <object type="tree" name="redtop">
+        <transblock>
+            <translate x="0" y="-0.5" z="0"/>
+            <scale x="1.5" y="-1" z="1.5"/>
+            <object type="primitive" name="cone" >
+                <diffuse r="0.4" g="0" b="0"/>
+            </object>
+        </transblock>
+        <transblock>
+            <translate x="0" y="0.5" z="0" />
+            <scale x="0.1" y="1" z="0.1" />
+            <object type="primitive" name="cylinder" >
+                <diffuse r="0.4" g="0" b="0"/>
+            </object>
+        </transblock>
+    </object>
+
+    <object type="tree" name="bluetop">
+        <transblock>
+            <translate x="0" y="-0.5" z="0"/>
+            <scale x="1.5" y="-1" z="1.5"/>
+            <object type="primitive" name="cone" >
+                <diffuse r="0" g="0" b="0.4"/>
+            </object>
+        </transblock>
+        <transblock>
+            <translate x="0" y="0.5" z="0" />
+            <scale x="0.1" y="1" z="0.1" />
+            <object type="primitive" name="cylinder" >
+                <diffuse r="0" g="0" b="0.4"/>
+            </object>
+        </transblock>
+    </object>
+
+    <object type="tree" name="board">
+        <transblock>
+            <scale x="1" y="0.1" z="1"/>
+            <object type="primitive" name="cylinder">
+                <diffuse r="0.55" g="0.32" b="0.074"/>
+            </object>
+        </transblock>
+    </object>
+
+    <object type="tree" name="root">
+        <transblock>
+            <object type="tree" name="tops">
+                <transblock>
+                    <translate x="-0.2" y="0.5" z="0.8"/>
+                    <object type="master" name="redtop"/>
+                </transblock>
+                <transblock>
+                    <translate x="0.2" y="0.5" z="-0.8"/>
+                    <object type="master" name="bluetop"/>
+                </transblock>
+            </object>
+        </transblock>
+
+        <transblock>
+            <translate x="0" y="-0.55" z="0"/>
+            <scale x="7" y="1" z="7"/>
+            <object type="master" name="board" />
+        </transblock>
+    </object>
+
+</scenefile>

@@ -1,0 +1,23 @@
+<scenefile>
+	<globaldata>
+		<diffusecoeff v="0.5"/>
+		<specularcoeff v="0.5"/>
+		<ambientcoeff v="0.5"/>
+	</globaldata>
+
+	<lightdata>
+		<id v="0"/>
+		<color r="1" g="1" b="1"/>
+		<position x="3" y="3" z="3"/>
+	</lightdata>
+
+	<object type="tree" name="root">
+		<transblock>
+			<object type="primitive" name="cylinder" >
+				<diffuse r="1" g="0" b="0"/>
+			</object>
+		</transblock>
+	</object>
+
+</scenefile>
+

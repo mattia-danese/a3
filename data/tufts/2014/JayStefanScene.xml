@@ -1,0 +1,275 @@
+<scenefile>
+    <globaldata>
+	<diffusecoeff v="0.5"/>
+	<specularcoeff v="0.5"/>
+	<ambientcoeff v="0.5"/>
+    </globaldata>
+
+    <cameradata>
+	<pos x="12" y="6" z="6"/>
+	<focus x="4" y="0" z="3"/>
+	<up x="0" y="1" z="0"/>
+	<heightangle v="60"/>
+    </cameradata>
+
+    <lightdata>
+	<id v="0"/>
+	<position x="8.5" y="2" z="8.5"/>
+	<color r=".6" g=".6" b=".6"/>
+	<function v1="0" v2="1" v3=".1"/>
+    </lightdata>
+
+    <lightdata>
+	<id v="1"/>
+	<position x="3" y="3" z="3"/>
+	<color r="1" g="0" b="1"/>
+	<function v1="0" v2="1" v3="0.1"/>
+    </lightdata>
+
+    <lightdata>
+      <id v="2"/>
+      <position x="8" y="1" z="3.75"/>
+      <color r="1" g="0.2" b="0.8"/>
+      <function v1="1" v2="-1" v3="0.1"/>
+    </lightdata>
+
+
+<lightdata>
+  <id v="3"/>
+  <position x="7" y="2" z="3.4"/>
+  <color r="0" g="0" b="0.8"/>
+  <function v1="0" v2="-1.3" v3="0.1"/>
+</lightdata>
+
+
+
+
+    <lightdata>
+	<id v="6"/>
+	<position x="7" y="3" z="1"/>
+	<color r="1" g="1" b="1"/>
+	<function v1="1" v2="1" v3=".1"/>
+    </lightdata>
+
+    <lightdata>
+      <id v="4"/>
+      <position x="6" y="4" z="4"/>
+      <color r="1" g="0" b="1"/>
+      <function v1="1" v2="1" v3=".1"/>
+    </lightdata>
+
+<lightdata>
+  <id v="11"/>
+  <position x="6" y="4" z="4"/>
+  <color r="1" g="0" b="1"/>
+  <function v1="1" v2="1" v3=".1"/>
+</lightdata>
+
+
+    <lightdata>
+      <id v="5a"/>
+      <position x="4.2" y="2.4" z="4.3"/>
+      <color r="0.5" g="0" b="0.5"/>
+      <function v1="0" v2="1" v3="0"/>
+    </lightdata>
+
+<lightdata>
+	<id v="7"/>
+	<position x="3" y="3.2" z="5"/>
+	<color r="1" g="1" b="1"/>
+	<function v1="2" v2="0" v3="1"/>
+</lightdata>
+
+
+
+<object type="tree" name="tower">
+  <transblock>
+    <translate x="0" y="1.5" z="0"/>
+    <scale x="1" y="3" z="1"/>
+    <object type="primitive" name="cylinder" >
+      <diffuse r=".3" g=".3" b=".35"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="0" y="3.5" z="0"/>
+    <object type="primitive" name="cone" >
+      <diffuse r="1" g="0" b="0"/>
+    </object>
+  </transblock>
+
+</object>
+
+<object type="tree" name="balcony">
+  <transblock>
+    <translate x="0" y="2" z="0"/>
+    <scale x="1" y="3" z="1"/>
+    <object type="primitive" name="cylinder" >
+      <diffuse r=".3" g=".3" b=".35"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="0" y="4" z="0"/>
+    <object type="primitive" name="cone" >
+      <diffuse r="1" g="0" b="0"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="0" y="0.4" z="0"/>
+    <object type="primitive" name="sphere" >
+      <diffuse r=".3" g=".3" b=".35"/>
+    </object>
+  </transblock>
+
+</object>
+
+<object type="tree" name="castle">
+  <transblock>
+    <translate x="4" y="1" z="4"/>
+    <scale x="2" y="2" z="3.5"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="1" g="1" b="1"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="5" y="2" z="4"/>
+    <scale x="0.2" y="0.5" z="3.5"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+
+
+  <transblock>
+    <translate x="3" y="2" z="4"/>
+    <scale x="0.2" y="0.5" z="3.5"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="4" y="2" z="2.25"/>
+    <scale x="2.2" y="0.5" z="0.2"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="4" y="2" z="5.75"/>
+    <scale x="2.2" y="0.5" z="0.2"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+</object>
+
+<object type="tree" name="smallcastle">
+  <transblock>
+    <translate x="1" y="1" z="1"/>
+    <scale x="2" y="2" z="2.5"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="1" g="1" b="1"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="2" y="2" z="1"/>
+    <scale x="0.2" y="0.5" z="2.68"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+
+
+  <transblock>
+    <translate x="0" y="1.99" z="1"/>
+    <scale x="0.2" y="0.5" z="2.68"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="1" y="2" z="-0.25"/>
+    <scale x="1.8" y="0.5" z="0.2"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="1" y="2" z="2.25"/>
+    <scale x="1.8" y="0.5" z="0.2"/>
+    <object type="primitive" name="cube" >
+      <diffuse r="0.1" g="0.1" b="0.1"/>
+    </object>
+  </transblock>
+</object>
+
+    <object type="tree" name="root">
+	<transblock>
+	    <object type="tree">
+
+		<transblock>
+		    <translate x="4" y="0" z="4"/>
+		    <scale x="8" y="0.1" z="8"/>
+		    <object type="primitive" name="cube" >
+			<diffuse r=".1" g=".4" b=".01"/>
+		    </object>
+		</transblock>
+
+
+<transblock>
+  <translate x="5" y="1.2" z="2.25"/>
+  <scale x=".35" y="0.75" z=".35"/>
+  <object type="master" name="balcony" />
+</transblock>
+
+<transblock>
+  <translate x="5" y="1.5" z="5.75"/>
+  <scale x=".45" y="0.5" z=".45"/>
+  <object type="master" name="balcony" />
+</transblock>
+
+<transblock>
+  <translate x="3" y="0" z="2.25"/>
+  <scale x=".45" y="1.5" z=".45"/>
+  <object type="master" name="tower" />
+</transblock>
+
+<transblock>
+  <translate x="3" y="0" z="5.75"/>
+  <scale x=".45" y="1.5" z=".45"/>
+  <object type="master" name="tower" />
+</transblock>
+
+<transblock>
+  <object type="master" name="castle" />
+</transblock>
+
+<transblock>
+  <translate x="2.5" y="0" z="4.75"/>
+  <scale x="0.8" y="1.5" z="0.7"/>
+  <object type="master" name="smallcastle" />
+</transblock>
+
+<transblock>
+  <translate x="4.5" y="-2" z="2.75"/>
+  <scale x="1.5" y="1.5" z="1.5"/>
+  <object type="master" name="balcony" >
+    <diffuse r="1" g="1" b="1"/>
+  </object>
+</transblock>
+
+
+	    </object>
+	</transblock>
+    </object>
+
+</scenefile>
+

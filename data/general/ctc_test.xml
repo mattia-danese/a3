@@ -1,0 +1,36 @@
+<scenefile>
+	<globaldata>
+		<diffusecoeff v="0.5"/>
+		<specularcoeff v="0.5"/>
+		<ambientcoeff v="0.5"/>
+	</globaldata>
+
+	<cameradata>
+		<pos x="0" y="0" z="3"/>
+		<focus x="0" y="0" z="0"/>
+		<up x="0" y="1" z="0"/>
+		<heightangle v="45"/>
+	</cameradata>
+
+	<lightdata>
+		<id v="0"/>
+		<position x="0" y="1" z="1"/>
+		<color r="1" g="1" b="1"/>
+	</lightdata>
+
+	<object type="tree" name="root">
+		<transblock>
+			<object type="tree">
+				<transblock>
+					<translate x="-1" y="0" z="0"/>
+					<scale x=".5" y=".5" z=".5"/>
+					<object type="primitive" name="sphere" >
+						<diffuse r="1" g="0" b="0"/>
+					</object>
+				</transblock>
+			</object>
+		</transblock>
+	</object>
+
+</scenefile>
+

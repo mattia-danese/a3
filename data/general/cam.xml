@@ -1,0 +1,59 @@
+<scenefile>
+	<globaldata>
+		<diffusecoeff v="0.5"/>
+		<specularcoeff v="0.5"/>
+		<ambientcoeff v="0.5"/>
+	</globaldata>
+
+	<lightdata>
+		<id v="0"/>
+		<color r="1" g="1" b="1"/>
+		<position x="3" y="3" z="3"/>
+	</lightdata>
+
+	<lightdata>
+		<id v="1"/>
+		<color r="1" g="1" b="1"/>
+		<position x="-3" y="3" z="3"/>
+	</lightdata>
+
+	<lightdata>
+		<id v="2"/>
+		<color r="1" g="1" b="1"/>
+		<position x="-3" y="3" z="-3"/>
+	</lightdata>
+
+	<lightdata>
+		<id v="3"/>
+		<color r="1" g="1" b="1"/>
+		<position x="3" y="3" z="-3"/>
+	</lightdata>
+
+	<object type="tree" name="root">
+		<transblock>
+			<scale x=".05" y="1.0" z=".05"/>
+			<translate x="0" y=".5" z="0"/>
+			<object type="primitive" name="cylinder" >
+				<diffuse r="0" g="0" b="1"/>
+			</object>
+		</transblock>
+		<transblock>
+			<rotate x="1" y="0" z="0" angle="90"/>
+			<scale x=".05" y="1.0" z=".05"/>
+			<translate x="0" y=".5" z="0"/>
+			<object type="primitive" name="cylinder" >
+				<diffuse r="1" g="0" b="0"/>
+			</object>
+		</transblock>
+		<transblock>
+			<rotate x="0" y="0" z="1" angle="-90"/>
+			<scale x=".05" y="1.0" z=".05"/>
+			<translate x="0" y=".5" z="0"/>
+			<object type="primitive" name="cylinder" >
+				<diffuse r="0" g="1" b="0"/>
+			</object>
+		</transblock>
+	</object>
+
+</scenefile>
+

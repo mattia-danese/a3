@@ -1,0 +1,335 @@
+<scenefile>
+	<globaldata>
+		<diffusecoeff v="0.5"/>
+		<specularcoeff v="0.5"/>
+		<ambientcoeff v="0.5"/>
+	</globaldata>
+
+	<cameradata>
+		<pos x="5" y="5" z="5"/>
+		<focus x="5" y="5" z="0"/>
+		<up x="0" y="1" z="0"/>
+		<heightangle v="45"/>
+    </cameradata>
+
+	<lightdata>
+		<id v="0"/>
+		<color r="1" g="1" b="1"/>
+		<position x="0" y="15" z="5"/>
+    </lightdata>
+
+    <lightdata>
+		<id v="1"/>
+		<color r="1" g="1" b="1"/>
+		<position x="15" y="0" z="5"/>
+    </lightdata>
+
+    <lightdata>
+		<id v="2"/>
+		<color r="1" g="1" b="1"/>
+		<position x="0" y="0" z="5"/>
+    </lightdata>
+
+	<lightdata>
+		<id v="3"/>
+		<color r="1" g="1" b="1"/>
+		<position x="15" y="15" z="5"/>
+    </lightdata>
+
+	<object type="tree" name="root">
+	<transblock>
+
+		<translate x="5" y="5" z="0"/>
+		<rotate x="1" y="0" z="0" angle="45"/>
+
+		<object type="tree" name="center">
+		<transblock>
+			<object type="primitive" name="cube">
+			<diffuse r=".2" g=".1" b=".3"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y=".5" z=".4"/>
+			<scale x=".1" y=".1" z=".1"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".1" g=".1" b=".1"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="0" y="0" z="-.5"/>
+			<rotate x="1" y="0" z="0" angle="90"/>
+			<rotate x="0" y="0" z="1" angle="90"/>
+			<scale x=".5" y="1" z="1"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".2" g=".1" b=".3"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="-.5" y="0" z="-.5"/>
+			<scale x=".5" y="1" z=".5"/>
+			<object type="primitive" name="sphere">
+			<diffuse r=".2" g=".1" b=".3"/>
+			</object>
+		</transblock>
+
+		<transblock>
+			<translate x=".5" y="0" z="-.5"/>
+			<scale x=".5" y="1" z=".5"/>
+			<object type="primitive" name="sphere">
+			<diffuse r=".2" g=".1" b=".3"/>
+			</object>
+		</transblock>
+
+		<transblock>
+			<translate x="-.5" y="0" z="0"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".2" g=".1" b=".3"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x=".5" y="0" z="0"/>
+		</transblock>
+
+		<transblock>
+			<translate x=".5" y="0" z="0"/>
+
+			<object type="primitive" name="cylinder">
+			<diffuse r=".2" g=".1" b=".3"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="-1.15" y="0" z="0"/>
+			<scale x=".35" y=".5" z=".35"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".5" g=".5" b=".5"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="1.15" y="0" z="0"/>
+			<scale x=".25" y=".5" z=".25"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".5" g=".5" b=".5"/>
+			</object>
+		</transblock>
+
+		<transblock>
+			<translate x="1.15" y=".45" z="0"/>
+			<scale x=".25" y=".1" z=".25"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".1" g=".1" b="1"/>
+			</object>
+		</transblock>
+
+		</object>
+
+		<object type="tree" name="lefthandle">
+		<transblock>
+			<translate x="-.75" y="0" z=".25"/>
+			<scale x="1" y="1.25" z="1"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".398" g=".199" b=".597656"/>
+			</object>
+
+			<object type="tree" name="llowerdpad">
+			<transblock>
+				<translate x=".3" y=".25" z=".6"/>
+				<scale x=".75" y=".5" z=".75"/>
+				<object type="primitive" name="cylinder">
+				<diffuse r=".2" g=".1" b=".3"/>
+				</object>
+
+				<object type="tree" name="dpad">
+				<transblock>
+					<translate x="0" y=".5" z= "0"/>
+					<scale x=".1" y=".1" z=".5"/>
+					<object type="primitive" name="cube">
+					<diffuse r=".05" g=".05" b=".05"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x="0" y=".5" z= "0"/>
+					<scale x=".5" y=".1" z=".1"/>
+					<object type="primitive" name="cube">
+					<diffuse r=".05" g=".05" b=".05"/>
+					</object>
+				</transblock>
+				</object>
+
+			</transblock>
+			</object>
+
+			<object type="tree" name="ljoystick">
+				<transblock>
+					<translate x="0" y=".35" z="0"/>
+
+					<scale x=".75" y=".5" z=".75"/>
+					<object type="primitive" name="sphere">
+					<diffuse r=".2" g=".1" b=".3"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x="0" y=".45" z="0"/>
+					<scale x=".5" y=".35" z=".5"/>
+					<object type="primitive" name="sphere">
+					<diffuse r=".3" g=".3" b=".3"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x="0" y=".45" z="0"/>
+					<scale x=".15" y=".5" z=".15"/>
+					<object type="primitive" name="cylinder">
+					<diffuse r=".2" g=".2" b=".2"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x="0" y=".75" z="0"/>
+					<scale x=".35" y=".1" z=".35"/>
+					<object type="primitive" name="sphere">
+					<diffuse r=".2" g=".2" b=".2"/>
+					</object>
+				</transblock>
+			</object>
+		</transblock>
+		</object>
+
+		<object type="tree" name="righthandle">
+		<transblock>
+			<translate x=".75" y="0" z=".25"/>
+			<scale x="1" y="1.25" z="1"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".398" g=".199" b=".597656"/>
+			</object>
+
+			<object type="tree" name="rbuttons">
+			<transblock>
+				<translate x="0" y=".5" z="0"/>
+				<scale x=".3" y=".1" z= ".3"/>
+				<object type="primitive" name="cylinder">
+				<diffuse r=".0" g=".5" b="0"/>
+				</object>
+			</transblock>
+			<transblock>
+				<translate x="-.25" y=".5" z=".2"/>
+				<scale x=".15" y=".1" z= ".15"/>
+				<object type="primitive" name="cylinder">
+				<diffuse r=".5" g=".0" b="0"/>
+				</object>
+			</transblock>
+			<transblock>
+				<translate x="-.1" y=".5" z="-.25"/>
+				<rotate x="0" y="1" z="0" angle="20"/>
+				<scale x=".1" y=".1" z=".1"/>
+				<object type="tree" name="Y">
+				<transblock>
+					<object type="primitive" name="cube">
+					<diffuse r=".1" g=".1" b=".1"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x=".5" y=".0" z=".0"/>
+					<object type="primitive" name="cylinder">
+					<diffuse r=".1" g=".1" b=".1"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x="-.5" y=".0" z=".0"/>
+					<object type="primitive" name="cylinder">
+					<diffuse r=".1" g=".1" b=".1"/>
+					</object>
+				</transblock>
+				</object>
+			</transblock>
+			<transblock>
+				<translate x=".25" y=".5" z="-.1"/>
+				<rotate x="0" y="1" z="0" angle="-70"/>
+				<scale x=".1" y=".1" z=".1"/>
+				<object type="tree" name="X">
+				<transblock>
+					<object type="primitive" name="cube">
+					<diffuse r=".1" g=".1" b=".1"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x=".5" y=".0" z=".0"/>
+					<object type="primitive" name="cylinder">
+					<diffuse r=".1" g=".1" b=".1"/>
+					</object>
+				</transblock>
+				<transblock>
+					<translate x="-.5" y=".0" z=".0"/>
+					<object type="primitive" name="cylinder">
+					<diffuse r=".1" g=".1" b=".1"/>
+					</object>
+				</transblock>
+				</object>
+			</transblock>
+			</object>
+
+		<object type="tree" name="rllowerdpad">
+		<transblock>
+			<translate x="-.3" y=".25" z=".6"/>
+			<scale x=".75" y=".5" z=".75"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".2" g=".1" b=".3"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="-.3" y=".45" z=".6"/>
+			<scale x=".5" y=".15" z=".5"/>
+			<object type="primitive" name="sphere">
+			<diffuse r=".4" g=".2" b="0"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="-.3" y=".5" z=".6"/>
+			<scale x=".2" y=".15" z=".2"/>
+			<object type="primitive" name="cylinder">
+			<diffuse r=".4" g=".2" b="0"/>
+			</object>
+		</transblock>
+		<transblock>
+			<translate x="-.3" y=".5" z=".6"/>
+			<scale x=".20" y=".1" z=".20"/>
+			<object type="primitive" name="sphere">
+			<diffuse r=".4" g=".2" b="0"/>
+			</object>
+		</transblock>
+		</object>
+
+		<object type="tree" name="lHandle">
+		<transblock>
+			<translate x="-1.8" y=".1" z="1"/>
+			<scale x=".5" y="1" z="2"/>
+			<object type="tree" name="asdf">
+			<transblock>
+				<rotate x="0" y="1" z="0" angle="50"/>
+				<object type="primitive" name="sphere">
+				<diffuse r=".398" g=".199" b=".597656"/>
+				</object>
+			</transblock>
+			</object>
+		</transblock>
+		</object>
+		<object type="tree" name="rHandle">
+		<transblock>
+			<translate x=".3" y=".1" z="1"/>
+			<scale x=".5" y="1" z="2"/>
+			<object type="tree" name="asdf">
+			<transblock>
+				<rotate x="0" y="1" z="0" angle="50"/>
+				<object type="primitive" name="sphere">
+				<diffuse r=".398" g=".199" b=".597656"/>
+				</object>
+			</transblock>
+			</object>
+		</transblock>
+		</object>
+
+	</transblock>
+	</object>
+
+</transblock>
+</object>
+
+</scenefile>
+

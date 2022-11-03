@@ -1,0 +1,83 @@
+<scenefile>
+<globaldata>
+  <diffusecoeff v="0.5"/>
+  <specularcoeff v="0.5"/>
+  <ambientcoeff v="0.5"/>
+</globaldata>
+
+<cameradata>
+  <pos x="-4" y="2" z="2"/>
+  <up x="0" y="1" z="0"/>
+  <focus x="0" y="0" z="0"/>
+  <heightangle v="30"/>
+</cameradata>
+
+<lightdata>
+  <id v="0"/>
+  <type id="directional"/>
+  <direction x="0" y="-1" z="-1"/>
+  <color r="0.8" g="0.8" b="0.8"/>
+</lightdata>
+
+<lightdata>
+  <id v="1"/>
+  <type id="directional"/>
+  <direction x="1" y="-1" z="0"/>
+  <color r="0.4" g="0.4" b="0.4"/>
+</lightdata>
+
+<object type="tree" name="root">
+  <transblock>
+    <translate x="-0.85" y="0" z="0.85"/>
+    <object type="primitive" name="cylinder" >
+      <specular r="1.0" g="1.0" b="1.0"/>
+      <reflective r="0.8" g="0.6" b="0.6"/>
+      <diffuse r="0.8" g="0.6" b="0.6"/>
+      <shininess value="15"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="-0.85" y="0" z="-0.85"/>
+    <object type="primitive" name="cylinder" >
+      <specular r="1.0" g="1.0" b="1.0"/>
+      <reflective r="0.6" g="0.6" b="0.8"/>
+      <diffuse r="0.6" g="0.6" b="0.8"/>
+      <shininess value="15"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="0.85" y="0" z="-0.85"/>
+    <object type="primitive" name="cylinder" >
+      <specular r="1.0" g="1.0" b="1.0"/>
+      <reflective r="0.6" g="0.8" b="0.6"/>
+      <diffuse r="0.6" g="0.8" b="0.6"/>
+      <shininess value="15"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="0.85" y="0" z="0.85"/>
+    <object type="primitive" name="cylinder" >
+      <specular r="1.0" g="1.0" b="1.0"/>
+      <reflective r="0.6" g="0.6" b="0.6"/>
+      <diffuse r="0.7" g="0.7" b="0.7"/>
+      <shininess value="15"/>
+    </object>
+  </transblock>
+
+  <transblock>
+    <translate x="0" y="-0.6" z="0"/>
+    <scale x="6" y="0.1" z="6" />
+    <object type="primitive" name="cube" >
+      <texture file="./data/tests/image/earth.ppm" u="1" v="1"/>
+      <blend value="0.9"/>
+      <reflective r="0.3" g="0.3" b="0.3"/>
+      <diffuse r="0" g="1" b="1"/>
+      <shininess value="15"/>
+    </object>
+  </transblock>
+
+</object>
+</scenefile>

@@ -1,0 +1,236 @@
+<scenefile>
+  <globaldata>
+    <diffusecoeff  v="1"/>
+    <specularcoeff v="0"/>
+    <ambientcoeff  v="0.5"/>
+  </globaldata>
+
+  <cameradata>
+    <pos x="-4.2" y="5.7" z="6"/>
+    <up x="0" y="1" z="0"/>
+    <focus x="7" y="-9.8" z="-10"/>
+    <heightangle v="60"/>
+  </cameradata>
+
+  <lightdata>
+    <id v="0"/>
+    <color r="1" g="1" b="1"/>
+    <function v1="1" v2="0" v3="0"/>
+    <position x="0" y="0" z="4"/>
+  </lightdata>
+
+  <lightdata>
+    <id v="1"/>
+    <color r="1" g="1" b="1"/>
+    <function v1="1" v2="0" v3="0"/>
+    <position x="0" y="10" z="-4"/>
+  </lightdata>
+
+  <object type="tree" name="rCube">
+    <transblock>
+      <object type="primitive" name="cube" >
+	<diffuse r="1" g="0" b="0"/>
+	<ambient r="1" g="0" b="0"/>
+      </object>
+    </transblock>
+  </object>
+
+  <object type="tree" name="gCube">
+    <transblock>
+      <object type="primitive" name="cube" >
+	<diffuse r="0" g="1" b="0"/>
+	<ambient r="0" g="1" b="0"/>
+      </object>
+    </transblock>
+  </object>
+
+  <object type="tree" name="bCube">
+    <transblock>
+      <object type="primitive" name="cube" >
+	<diffuse r="0" g="0" b="1"/>
+	<ambient r="0" g="0" b="1"/>
+      </object>
+    </transblock>
+  </object>
+
+  <object type="tree" name="yCube">
+    <transblock>
+      <object type="primitive" name="cube" >
+	<diffuse r="1" g="1" b="0"/>
+	<ambient r="1" g="1" b="0"/>
+      </object>
+    </transblock>
+  </object>
+
+  <object type="tree" name="wCube">
+    <transblock>
+      <object type="primitive" name="cube" >
+	<diffuse r="1" g="1" b="1"/>
+	<ambient r="1" g="1" b="1"/>
+      </object>
+    </transblock>
+  </object>
+
+  <object type="tree" name="pCube">
+    <transblock>
+      <object type="primitive" name="cube" >
+	<diffuse r="1" g="0" b="1"/>
+	<ambient r="1" g="0" b="1"/>
+      </object>
+    </transblock>
+  </object>
+
+  <object type="tree" name="root">
+    <!-- TODO: use nested trees to avoid coordinate bullshit -->
+    <!-- FRONT LAYER -->
+    <transblock>
+      <translate x="-1.2" y="0.6" z="0"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="rCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="0.6" z="0"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="gCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="0.6" z="0"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="bCube" />
+    </transblock>
+
+    <transblock>
+      <translate x="-1.2" y="-0.6" z="0"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="yCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="-0.6" z="0"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="gCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="-0.6" z="0"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="yCube" />
+    </transblock>
+
+    <transblock>
+      <translate x="-1.2" y="-1.8" z="0"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="wCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="-1.8" z="0"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="pCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="-1.8" z="0"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="wCube" />
+    </transblock>
+    <!-- END FRONT LAYER -->
+
+    <!-- SECOND LAYER -->
+    <transblock>
+      <translate x="-1.2" y="0.6" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="pCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="0.6" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="gCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="0.6" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="bCube" />
+    </transblock>
+
+    <transblock>
+      <translate x="-1.2" y="-0.6" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="yCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="-0.6" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="gCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="-0.6" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="yCube" />
+    </transblock>
+
+    <transblock>
+      <translate x="-1.2" y="-1.8" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="wCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="-1.8" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="pCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="-1.8" z="-1.2"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="wCube" />
+    </transblock>
+    <!-- END SECOND LAYER -->
+
+    <!-- BACK LAYER -->
+    <transblock>
+      <translate x="-1.2" y="0.6" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="rCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="0.6" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="gCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="0.6" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="bCube" />
+    </transblock>
+
+    <transblock>
+      <translate x="-1.2" y="-0.6" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="yCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="-0.6" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="gCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="-0.6" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="yCube" />
+    </transblock>
+
+    <transblock>
+      <translate x="-1.2" y="-1.8" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="0"/>
+      <object type="master" name="wCube" />
+    </transblock>
+    <transblock>
+      <translate x="0" y="-1.8" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="90"/>
+      <object type="master" name="pCube" />
+    </transblock>
+    <transblock>
+      <translate x="1.2" y="-1.8" z="-2.4"/>
+      <rotate x="0" y="1" z="0" angle="180"/>
+      <object type="master" name="wCube" />
+    </transblock>
+    <!-- END BACK LAYER -->
+  </object>
+
+</scenefile>
