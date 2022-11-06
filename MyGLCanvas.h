@@ -16,6 +16,7 @@
 #include "Cylinder.h"
 #include "Cone.h"
 #include "Sphere.h"
+#include "list"
 
 #include "Camera.h"
 #include "scene/SceneParser.h"
@@ -41,7 +42,9 @@ public:
 	SceneParser* parser;
 
     // what I added
-    vector<ScenePrimitive*> primitives;
+	list<ScenePrimitive*> primitives;
+	vector<SceneTransformation*> scenetransformations;
+	vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals;
     vector<vector<int>> isect_pixels;
 
 	MyGLCanvas(int x, int y, int w, int h, const char *l = 0);
@@ -50,6 +53,7 @@ public:
 	void setSegments();
 	void loadSceneFile(const char* filenamePath);
 	void renderScene();
+	void traverse1(SceneNode* root, list<ScenePrimitive*>& primitives, vector<SceneTransformation*>& scenetransformations, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals);
 
 private:
 	void setpixel(GLubyte* buf, int x, int y, int r, int g, int b);
