@@ -62,7 +62,7 @@ public:
 	double intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	float solveQuadratic(double A, double B, double C);
 // 	double intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
-	float solveFace(glm::vec3 eye, glm::vec3 d, int i, float n);
+	float intersectFace(glm::vec3 eye, glm::vec3 d, int i, float n);
 	float minPos(float x, float y);
 
 private:
