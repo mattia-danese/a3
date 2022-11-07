@@ -27,9 +27,8 @@ MyGLCanvas::MyGLCanvas(int x, int y, int w, int h, const char *l) : Fl_Gl_Window
 	shape = cube;
 
 	shape->setSegments(segmentsX, segmentsY);
-
 	camera = new Camera();
-	camera->orientLookAt(eyePosition, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	camera->orientLookVec(eyePosition, glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
 }
 
 MyGLCanvas::~MyGLCanvas() {
@@ -79,7 +78,7 @@ void MyGLCanvas::loadSceneFile(const char* filenamePath) {
 	parser = new SceneParser(filenamePath);
 
 	bool success = parser->parse();
-	cout << "success? " << success << endl;
+	std::cout << "success? " << success << endl;
 	if (success == false) {
 		delete parser;
 		parser = NULL;
@@ -115,7 +114,8 @@ glm::vec3 MyGLCanvas::generateRay(int pixelX, int pixelY) {
 		-1.0f + 2.0f * ((float)pixelY / (float)camera->getScreenHeight()),
 		-1.0f);
 
-	glm::mat4 inv = camera->getInverseModelViewMatrix();
+	//likely stems from here
+	glm::mat4 inv = camera->getInverseScaleMatrix() * camera->getInverseModelViewMatrix();
 	glm::vec4 worldFPP = inv * glm::vec4(lookAt, 1);
 	glm::vec4 worldEye = inv * glm::vec4(camera->getEyePoint(), 0);
 
@@ -131,24 +131,107 @@ glm::vec3 MyGLCanvas::getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, floa
 	return p;
 }
 
-double MyGLCanvas::intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix) {
+// FROM PREVIOUS LAB
+double MyGLCanvas::intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
+	glm::mat4 transformInv = glm::inverse(transformMatrix);
+	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
+    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 1);
 
-	double t = -1;
+	// double A = glm::dot(rayVObject, rayVObject);
+	// double B = 2 * glm::dot(eyePointObject, rayVObject);
+	// double C = glm::dot(eyePointObject, eyePointObject) - pow(0.5, 2);
+	// double discriminant = pow(B, 2) - (4.0 * A * C);
 
-	glm::vec4 eyePointPO = glm::inverse(transformMatrix) * glm::vec4(eyePointP, 0);
-	glm::vec4 d = glm::inverse(transformMatrix) * glm::vec4(rayV, 0);
+    glm::vec3 spherePositionObject = transformInv * glm::vec4(spherepos, 1);
 
-	float r = 0.5;
-	float a = glm::dot(d, d);
-	float b = 2 * glm::dot(eyePointPO, d);
-	float c = glm::dot(eyePointPO, eyePointPO) - r * r;
-	double delta = b * b - 4 * a * c;
+    double A = glm::dot(rayVObject, rayVObject);
+    double B = 2 * glm::dot(rayVObject, (eyePointObject - spherePositionObject));
+    double C = glm::dot(eyePointObject, eyePointObject) - 2 * glm::dot(eyePointObject, spherepos) + glm::dot(spherepos, spherepos) - pow(0.5, 2);
+    double discriminant = pow(B, 2) - (4.0 * A * C);
 
-	if (delta <= 0) return t;
 
-	return std::min((-b + sqrt(delta)) / (2 * a), (-b - sqrt(delta)) / (2 * a));
+    // std::cout << "Ray: " << rayV.x << "," << rayV.y << "," << rayV.z << std::endl;
+    // std::cout << "Eye: " << eyePointP.x << "," << eyePointP.y << "," << eyePointP.z << std::endl;
 
+    // std::cout << "A: " << A << std::endl;
+    // std::cout << "B: " << B << std::endl;
+    // std::cout << "C: " << C << std::endl;
+    // std::cout << "discriminant: " << discriminant << std::endl;
+
+	if (discriminant < 0) {return -1;}
+    else {
+        double t1 = (-B + sqrt(discriminant)) / (2.0 * A);
+        double t2 = (-B - sqrt(discriminant)) / (2.0 * A);
+
+        if (t1 < 0) {return t2;}
+        if (t2 < 0) {return t1;}
+        return std::min(t1, t2);
+    }
 }
+
+double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
+	glm::mat4 transformInv = glm::inverse(transformMatrix);
+	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
+    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 1);
+
+	// double A = glm::dot(rayVObject, rayVObject);
+	// double B = 2 * glm::dot(eyePointObject, rayVObject);
+	// double C = glm::dot(eyePointObject, eyePointObject) - pow(0.5, 2);
+	// double discriminant = pow(B, 2) - (4.0 * A * C);
+
+    glm::vec3 spherePositionObject = transformInv * glm::vec4(spherepos, 1);
+
+	float A = (rayVObject.y*rayVObject.y + rayVObject.x*rayVObject.x - rayVObject.z*rayVObject.z);
+    float B = (2*eyePointObject.y*rayVObject.y + 2*eyePointObject.x*rayVObject.x - 2*eyePointObject.z*rayVObject.z);
+    float C = (eyePointObject.y*eyePointObject.y + eyePointObject.x*eyePointObject.x - eyePointObject.z*eyePointObject.z);
+    double discriminant = pow(B, 2) - (4.0 * A * C);
+
+	if (discriminant < 0) {return -1;}
+    else {
+        double t1 = (-B + sqrt(discriminant)) / (2.0 * A);
+        double t2 = (-B - sqrt(discriminant)) / (2.0 * A);
+
+        if (t1 < 0) {return t2;}
+        if (t2 < 0) {return t1;}
+        return std::min(t1, t2);
+    }
+}
+
+//
+//
+// NEEDS IMPLEMENTING
+//
+//
+double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
+	glm::mat4 transformInv = glm::inverse(transformMatrix);
+	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
+    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 1);
+
+	// double A = glm::dot(rayVObject, rayVObject);
+	// double B = 2 * glm::dot(eyePointObject, rayVObject);
+	// double C = glm::dot(eyePointObject, eyePointObject) - pow(0.5, 2);
+	// double discriminant = pow(B, 2) - (4.0 * A * C);
+
+    glm::vec3 spherePositionObject = transformInv * glm::vec4(spherepos, 1);
+
+
+	//TODO
+	float A = (rayVObject.y*rayVObject.y + rayVObject.x*rayVObject.x - rayVObject.z*rayVObject.z);
+    float B = (2*eyePointObject.y*rayVObject.y + 2*eyePointObject.x*rayVObject.x - 2*eyePointObject.z*rayVObject.z);
+    float C = (eyePointObject.y*eyePointObject.y + eyePointObject.x*eyePointObject.x - eyePointObject.z*eyePointObject.z);
+    double discriminant = pow(B, 2) - (4.0 * A * C);
+
+	if (discriminant < 0) {return -1;}
+    else {
+        double t1 = (-B + sqrt(discriminant)) / (2.0 * A);
+        double t2 = (-B - sqrt(discriminant)) / (2.0 * A);
+
+        if (t1 < 0) {return t2;}
+        if (t2 < 0) {return t1;}
+        return std::min(t1, t2);
+    }
+}
+
 
 
 void MyGLCanvas::draw() {
@@ -265,10 +348,10 @@ void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<
 
 
 void MyGLCanvas::renderScene() {
-	cout << "render button clicked!" << endl;
+	std::cout << "render button clicked!" << endl;
 
 	if (parser == NULL) {
-		cout << "no scene loaded yet" << endl;
+		std::cout << "no scene loaded yet" << endl;
 		return;
 	}
 
@@ -285,7 +368,7 @@ void MyGLCanvas::renderScene() {
 	memset(pixels, 0, pixelWidth  * pixelHeight * 3);
 		glm::vec3  eye_pnt = getEyePoint();
 		if (my_scene_vals.empty()) {
-			cout << "calling traverse!" << endl;
+			std::cout << "calling traverse!" << endl;
 			SceneNode* root = parser->getRootNode();
 			traverse1(root, my_scene_vals, scenetransformations);
 		}
@@ -323,36 +406,40 @@ void MyGLCanvas::renderScene() {
 								break;
 						}
 					}
-
+					glm::vec3 center = glm::vec3(0);
 					switch (prim->type) {
 					case SHAPE_CUBE:
 						break;
 					case SHAPE_CYLINDER:
 						break;
 					case SHAPE_CONE:
+						// cout << "here " << endl;
+						t = intersectCone(eye_pnt, ray, m, center);
 						break;
 					case SHAPE_SPHERE:
-						if (i == pixelWidth / 2 && j == pixelHeight / 2) {
+						// if (i == pixelWidth / 2 && j == pixelHeight / 2) {
 							//hard code intersection
-							color.r = 200;
-							color.g = 200;
-							color.b = 0;
-						}
-						t = intersectSphere(eye_pnt, ray, m);
+							// color.r = 200;
+							// color.g = 200;
+							// color.b = 0;
+							t = intersectSphere(eye_pnt, ray, m, center);
+							// cout << t << endl;
+						// }
 
 
 						//cout << "T: " << t << endl;
 						break;
 					}
 
-					if (t >= 0 && (t_min < 0 || t < t_min)) {
-						std::cout << "IGGGIGI" << endl;
+					if (t > 0) {
+						// std::cout << "IGGGIGI" << endl;
 						t_min = t;
 						intersection_obj = getIsectPointWorldCoord(eye_pnt, ray, t);
+						intersection = m * glm::vec4(intersection_obj, 1.0);
+						// for debugging purposes
 						color.r = 200;
 						color.g = 200;
 						color.b = 0;
-						// get the color
 					}
 
 				}
@@ -364,6 +451,6 @@ void MyGLCanvas::renderScene() {
 				}
 			}
 		}
-	cout << "render complete" << endl;
+	std::cout << "render complete" << endl;
 	redraw();
 }

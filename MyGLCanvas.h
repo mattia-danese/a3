@@ -56,6 +56,9 @@ public:
 	SceneColor computeSceneColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos);
 	glm::vec3 computeNormal(glm::vec3 intersection, OBJ_TYPE shape);
 	void traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans);
+	double intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
+	double intersectCone(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
+	double intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 
 private:
 	void setpixel(GLubyte* buf, int x, int y, int r, int g, int b);
@@ -63,7 +66,6 @@ private:
 	glm::vec3 generateRay(int pixelX, int pixelY);
 	glm::vec3 getEyePoint();
 	glm::vec3 getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, float t);
-	double intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix);
 
 	void draw();
 
