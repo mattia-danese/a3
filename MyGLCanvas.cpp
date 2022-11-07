@@ -2,6 +2,7 @@
 
 #include "MyGLCanvas.h"
 #include <glm/gtx/string_cast.hpp>
+#include <float.h>
 
 int Shape::m_segmentsX;
 int Shape::m_segmentsY;
