@@ -104,6 +104,53 @@ void MyGLCanvas::setSegments() {
 	shape->setSegments(segmentsX, segmentsY);
 }
 
+glm::vec3 MyGLCanvas::getEyePoint() {
+	glm::mat4 inv = camera->getInverseModelViewMatrix();
+	glm::vec4 eye = inv * glm::vec4(camera->getEyePoint(), 0);
+	return glm::vec3(eye.x, eye.y, eye.z);
+}
+
+glm::vec3 MyGLCanvas::generateRay(int pixelX, int pixelY) {
+	glm::vec3 lookAt = glm::vec3(-1.0f + 2.0f * ((float)pixelX / (float)camera->getScreenWidth()),
+		-1.0f + 2.0f * ((float)pixelY / (float)camera->getScreenHeight()),
+		-1.0f);
+
+	glm::mat4 inv = camera->getInverseModelViewMatrix();
+	glm::vec4 worldFPP = inv * glm::vec4(lookAt, 1);
+	glm::vec4 worldEye = inv * glm::vec4(camera->getEyePoint(), 0);
+
+	glm::vec4 dHat = glm::normalize(worldFPP - worldEye);
+
+	// std::cout << "X: " << dHat.x << "," << "Y: " << dHat.y << ',' << "Z: " << dHat.z << std::endl;
+
+	return glm::vec3(dHat.x, -dHat.y, dHat.z);
+}
+
+glm::vec3 MyGLCanvas::getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, float t) {
+	glm::vec3 p = eye + (t * ray);
+	return p;
+}
+
+double MyGLCanvas::intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix) {
+
+	double t = -1;
+
+	glm::vec4 eyePointPO = glm::inverse(transformMatrix) * glm::vec4(eyePointP, 0);
+	glm::vec4 d = glm::inverse(transformMatrix) * glm::vec4(rayV, 0);
+
+	float r = 0.5;
+	float a = glm::dot(d, d);
+	float b = 2 * glm::dot(eyePointPO, d);
+	float c = glm::dot(eyePointPO, eyePointPO) - r * r;
+	double delta = b * b - 4 * a * c;
+
+	if (delta <= 0) return t;
+
+	return std::min((-b + sqrt(delta)) / (2 * a), (-b - sqrt(delta)) / (2 * a));
+
+}
+
+
 void MyGLCanvas::draw() {
 	if (!valid()) {  //this is called when the GL canvas is set up for the first time or when it is resized...
 		printf("establishing GL context\n");
@@ -165,77 +212,56 @@ void MyGLCanvas::setpixel(GLubyte* buf, int x, int y, int r, int g, int b) {
 	buf[(y*pixelWidth + x) * 3 + 2] = (GLubyte)b;
 }
 
-glm::vec3 MyGLCanvas::getEyePoint() {
-    glm::mat4 inv = camera->getInverseModelViewMatrix();
-    glm::vec4 eye = inv * glm::vec4(camera->getEyePoint(), 0);
-	return glm::vec3(eye.x, eye.y, eye.z);
+SceneColor MyGLCanvas::computeSceneColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos) {
+
+	SceneGlobalData data;
+	parser->getGlobalData(data);
+
+	float ka = data.ka;
+
+	float kd = data.kd;
+
+	SceneColor Oa = material.cAmbient;
+	SceneColor Od = material.cDiffuse;
+
+	SceneColor color;
+	color.r = 0;
+	color.g = 0;
+	color.b = 0;
+	color.a = 255;
+	return color;
 }
 
-glm::vec3 MyGLCanvas::generateRay(int pixelX, int pixelY) {
-	glm::vec3 lookAt = glm::vec3(-1.0f + 2.0f * ((float)pixelX / (float)camera->getScreenWidth()),
-                                 -1.0f + 2.0f * ((float)pixelY / (float)camera->getScreenHeight()),
-                                 -1.0f);
-
-    glm::mat4 inv = camera->getInverseModelViewMatrix();
-    glm::vec4 worldFPP = inv * glm::vec4(lookAt, 1);
-    glm::vec4 worldEye = inv * glm::vec4(camera->getEyePoint(), 0);
-
-    glm::vec4 dHat = glm::normalize(worldFPP - worldEye);
-
-    // std::cout << "X: " << dHat.x << "," << "Y: " << dHat.y << ',' << "Z: " << dHat.z << std::endl;
-    
-	return glm::vec3(dHat.x, dHat.y, dHat.z);
+glm::vec3 MyGLCanvas::computeNormal(glm::vec3 intersection, OBJ_TYPE shape) {
+	return glm::vec3(1.0);
 }
 
-glm::vec3 MyGLCanvas::getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, float t) {
-	glm::vec3 p = eye + (t * ray);
-	return p;
+void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans)
+{
+	if (root == nullptr)
+		return;
+
+	for (SceneNode* node : root->children) { // storing transformations in non-primitive nodes 
+		for (SceneTransformation* my_trans : node->transformations) {
+			curr_trans.push_back(my_trans);
+		}
+
+		traverse1(node, my_scene_vals, curr_trans);
+
+		// hit leaf node
+		for (SceneTransformation* my_trans : node->transformations) { //storing transformations in primitive node
+			curr_trans.push_back(my_trans);
+		}
+
+		for (ScenePrimitive* my_prim : node->primitives) { // for all primitives in leaf node, make pair of prim and previously collected trasnformations
+			list<SceneTransformation*> curr_scene_trans = {};
+			my_scene_vals.push_back(pair<ScenePrimitive*, vector<SceneTransformation*>>(my_prim, curr_trans));
+		}
+		for (SceneTransformation* my_trans : node->transformations) { // func will recurse back up, delete transformations
+			curr_trans.pop_back();
+		}
+	}
 }
-
-double MyGLCanvas::intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix) {
-    glm::mat4 transformInv = glm::inverse(transformMatrix);
-    glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
-    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 1);
-
-    double A = glm::dot(rayVObject, rayVObject);
-    double B = 2 * glm::dot(eyePointObject, rayVObject);
-    double C = glm::dot(eyePointObject, eyePointObject) - pow(0.5, 2);
-    double discriminant = pow(B, 2) - (4.0 * A * C);
-
-    if (discriminant < 0) {return -1;}
-    else {
-        double t1 = (-B + sqrt(discriminant)) / (2.0 * A);
-        double t2 = (-B - sqrt(discriminant)) / (2.0 * A);
-
-        if (t1 < 0) {return t2;}
-        if (t2 < 0) {return t1;}
-        return std::min(t1, t2);
-    }
-}
-
-// void MyGLCanvas::traverse(SceneNode* root, list<ScenePrimitive*>& primitives, vector<SceneTransformation*>& scenetransformations, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals)
-// {
-// 	if (root == nullptr)
-// 		return;
-
-// 	for (SceneNode* node : root->children) {
-// 		for (SceneTransformation* my_trans : node->transformations) {
-// 			scenetransformations.push_back(my_trans);
-// 		}
-		
-// 		traverse(node, primitives, scenetransformations, my_scene_vals);
-		
-// 		for (ScenePrimitive* my_prim : node->primitives) { // hit leaf node
-// 			list<SceneTransformation*> curr_scene_trans = {};
-// 			my_scene_vals.push_back(pair<ScenePrimitive*, vector<SceneTransformation*>>(my_prim, scenetransformations));
-// 			primitives.push_back(my_prim);
-// 		}
-		
-// 		for (SceneTransformation* my_trans : node->transformations) {
-// 			scenetransformations.pop_back();
-// 		}
-// 	}
-// }
 
 
 void MyGLCanvas::renderScene() {
@@ -257,73 +283,87 @@ void MyGLCanvas::renderScene() {
 	}
 	pixels = new GLubyte[pixelWidth  * pixelHeight * 3];
 	memset(pixels, 0, pixelWidth  * pixelHeight * 3);
+		glm::vec3  eye_pnt = getEyePoint();
+		if (my_scene_vals.empty()) {
+			cout << "calling traverse!" << endl;
+			SceneNode* root = parser->getRootNode();
+			traverse1(root, my_scene_vals, scenetransformations);
+		}
 
-    //TODO: parse scene data tree
-    if (primitives.empty()){
-        SceneNode* root = parser->getRootNode();
-		traverse1(root, primitives, scenetransformations, my_scene_vals);
-    }
+		for (int i = 0; i < pixelWidth; i++) {
+			for (int j = 0; j < pixelHeight; j++) {
+				glm::vec3 intersection_obj = glm::vec4(0);
+				glm::vec4 intersection = glm::vec4(0);
+				float t_min = -1;
+				SceneColor color;
+				color.r = 0, color.g = 0, color.b = 0;
+				//TODO: this is where your ray casting will happen!
+				glm::vec3 ray = generateRay(i, j);
+				for (pair<ScenePrimitive*, vector<SceneTransformation*>> my_p : my_scene_vals) {
+					ScenePrimitive* prim = my_p.first;
+					float t = -1;
+					glm::mat4 m = glm::mat4(1.0);
+					// loop through transformations on each prim creating the matrix
+					for (SceneTransformation* my_trans : my_p.second) {
+						switch (my_trans->type) {
+							//TRANSFORMATION_TRANSLATE, TRANSFORMATION_SCALE,
+							//	TRANSFORMATION_ROTATE, TRANSFORMATION_MATRIX
+							case(TRANSFORMATION_TRANSLATE):
+								m = m * glm::translate(glm::mat4(1.0), my_trans->translate);
+								break;
+							case(TRANSFORMATION_SCALE):
+								m = m * glm::scale(glm::mat4(1.0), my_trans->scale);
+								break;
+							case(TRANSFORMATION_ROTATE):
+								//TODO: radians or degrees here?
+								m = m * glm::rotate(glm::mat4(1.0), glm::degrees(my_trans->angle), my_trans->rotate);
+								break;
+							case(TRANSFORMATION_MATRIX):
+								m = m * my_trans->matrix;
+								break;
+						}
+					}
 
-    glm::vec3 eyePoint = getEyePoint();
-    float t;
+					switch (prim->type) {
+					case SHAPE_CUBE:
+						break;
+					case SHAPE_CYLINDER:
+						break;
+					case SHAPE_CONE:
+						break;
+					case SHAPE_SPHERE:
+						if (i == pixelWidth / 2 && j == pixelHeight / 2) {
+							//hard code intersection
+							color.r = 200;
+							color.g = 200;
+							color.b = 0;
+						}
+						t = intersectSphere(eye_pnt, ray, m);
 
-	// PROCEDURE
-    // - loop through all pixels
-    // - - generate ray from eye point to pixel
-    // - - loop through all objects
-    // - - - see if any ray intersects any object by using object-specific intersection func
-    
-    float min_t = 10000;
-	ScenePrimitive* min_curr_obj;
-    for (int i = 0; i < pixelWidth; i++) {
-		for (int j = 0; j < pixelHeight; j++) {
-            //TODO: this is where your ray casting will happen!
-            
-        //generates ray to pixel (i,j)
-        glm::vec3 rayV = generateRay(i, j);
-		glm::vec3 sphereTransV(0, 0, 0);
-			for (pair<ScenePrimitive*, vector<SceneTransformation*>> my_p : my_scene_vals) {
-				ScenePrimitive* my_prim  = my_p.first;
-				if(my_prim->type == 3){
-							std::cout << "intersecting" << std::endl;
-							t = intersectSphere(eyePoint, rayV, glm::translate(glm::mat4(1.0), sphereTransV));
-							if (t > 0) {
-								if(t < min_t){
-										min_t = t;
-										min_curr_obj = my_prim;
-								}
-							}
+
+						//cout << "T: " << t << endl;
+						break;
+					}
+
+					if (t >= 0 && (t_min < 0 || t < t_min)) {
+						std::cout << "IGGGIGI" << endl;
+						t_min = t;
+						intersection_obj = getIsectPointWorldCoord(eye_pnt, ray, t);
+						color.r = 200;
+						color.g = 200;
+						color.b = 0;
+						// get the color
+					}
+
+				}
+				if (isectOnly == 1) {
+					setpixel(pixels, i, j, color.r, color.g, color.b);
+				}
+				else {
+					setpixel(pixels, i, j, 255, 255, 255);
 				}
 			}
-			//after going through all the primitives
-			glm::vec3 pixel_coord = getIsectPointWorldCoord(eyePoint, rayV, min_t);
-			std::cout << "pixel coord " << pixel_coord.x << " " << pixel_coord.y << std::endl;
-			setpixel(pixels,pixel_coord.x, pixel_coord.y, 200, 255, 0);
 		}
-	}
 	cout << "render complete" << endl;
 	redraw();
-}
-
-void MyGLCanvas::traverse1(SceneNode* root, list<ScenePrimitive*>& primitives, vector<SceneTransformation*>& scenetransformations, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals)
-{
-	if (root == nullptr)
-		return;
-
-	for (SceneNode* node : root->children) {
-		for (SceneTransformation* my_trans : node->transformations) {
-			scenetransformations.push_back(my_trans);
-		}
-		
-		traverse1(node, primitives, scenetransformations, my_scene_vals);
-		
-		for (ScenePrimitive* my_prim : node->primitives) { // hit leaf node
-			list<SceneTransformation*> curr_scene_trans = {};
-			my_scene_vals.push_back(pair<ScenePrimitive*, vector<SceneTransformation*>>(my_prim, scenetransformations));
-			primitives.push_back(my_prim);
-		}
-		for (SceneTransformation* my_trans : node->transformations) {
-			scenetransformations.pop_back();
-		}
-	}
 }
