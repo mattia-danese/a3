@@ -59,6 +59,9 @@ public:
 	double intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	double intersectCone(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	double intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
+	float solveQuadratic(double A, double B, double C);
+	double intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
+	float solveFace(glm::vec3 eye, glm::vec3 d, int i, float n);
 
 private:
 	void setpixel(GLubyte* buf, int x, int y, int r, int g, int b);

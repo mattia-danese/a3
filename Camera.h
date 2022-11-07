@@ -58,11 +58,31 @@ public:
 	float getScreenWidthRatio();
 
 private:
+	//viewAngle is height angle
 	float viewAngle, filmPlanDepth;
-	float nearPlane, farPlane = 1.0f;
+	float nearPlane, farPlane;
 	int screenWidth, screenHeight;
 	float screenWidthRatio;
-    glm::vec3 eyePoint;
-    glm::mat4 basis;
+
+	glm::mat4 tranlateM;
+	glm::mat4 rotateM;
+	glm::mat4 scaleM;
+	glm::mat4 mppM;
+
+	glm::vec3 eyePos;
+	glm::vec3 lookVector;
+	glm::vec3 upVector;
+
+	glm::vec3 u;
+	glm::vec3 v;
+	glm::vec3 w;
+
+	glm::mat4 uvw;
+
+	bool updateProject;
+
+	void updateRotateMatrix(glm::vec3 lookVec, glm::vec3 upVec);
+	void updateProjectMatrix();
 };
 #endif
+

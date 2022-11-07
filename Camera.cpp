@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include <iostream>
 
 Camera::Camera() {
 	reset();
@@ -8,8 +9,6 @@ Camera::~Camera() {
 }
 
 void Camera::reset() {
-    eyePoint = glm::vec3();
-    basis = glm::mat4(1.0);
 	orientLookAt(glm::vec3(0.0f, 0.0f, DEFAULT_FOCUS_LENGTH), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	setViewAngle(VIEW_ANGLE);
 	setNearPlane(NEAR_PLANE);
@@ -17,6 +16,8 @@ void Camera::reset() {
 	screenWidth = screenHeight = 200;
 	screenWidthRatio = 1.0f;
 	rotU = rotV = rotW = 0;
+
+	updateProject = true;
 }
 
 //called by main.cpp as a part of the slider callback for controlling rotation
@@ -35,131 +36,183 @@ void Camera::setRotUVW(float u, float v, float w) {
 
 
 void Camera::orientLookAt(glm::vec3 eyePoint, glm::vec3 lookatPoint, glm::vec3 upVec) {
-    orientLookVec(eyePoint, lookatPoint - eyePoint, upVec);
+	eyePos = eyePoint;
+	lookVector = glm::normalize(glm::vec3(lookatPoint.x - eyePoint.x, lookatPoint.y - eyePoint.y, lookatPoint.z - eyePoint.z));
+	upVector = upVec;
+
+	tranlateM = glm::translate(glm::mat4(1.0), glm::vec3(-1 * eyePoint.x, -1 * eyePoint.y, -1 * eyePoint.z));
+	updateRotateMatrix(lookVector, upVector);
 }
 
 
 void Camera::orientLookVec(glm::vec3 eyePoint, glm::vec3 lookVec, glm::vec3 upVec) {
-    this->eyePoint = eyePoint;
+	eyePos = eyePoint;
+	lookVector = lookVec;
+	upVector = upVec;
 
-    glm::vec3 w = -glm::normalize(lookVec);
-    glm::vec3 u = glm::cross(upVec, w);
-    u = glm::normalize(u);
-    glm::vec3 v = glm::cross(w, u);
-    
-    basis[0][0] = u.x;
-    basis[0][1] = u.y;
-    basis[0][2] = u.z;
-    basis[1][0] = v.x;
-    basis[1][1] = v.y;
-    basis[1][2] = v.z;
-    basis[2][0] = w.x;
-    basis[2][1] = w.y;
-    basis[2][2] = w.z;
+	tranlateM = glm::translate(glm::mat4(1.0), glm::vec3(-1 * eyePoint.x, -1 * eyePoint.y, -1 * eyePoint.z));
+	updateRotateMatrix(lookVector, upVector);
+}
+
+void Camera::updateRotateMatrix(glm::vec3 lookVec, glm::vec3 upVec) {
+	w = glm::normalize(glm::vec3(-1 * lookVec.x, -1 * lookVec.y, -1 * lookVec.z));
+	u = glm::normalize(glm::cross(upVec, w));
+	v = glm::normalize(glm::cross(w, u));
+	rotateM = glm::mat4(1.0);
+
+	rotateM[0][0] = u.x;
+	rotateM[1][0] = u.y;
+	rotateM[2][0] = u.z;
+
+	rotateM[0][1] = v.x;
+	rotateM[1][1] = v.y;
+	rotateM[2][1] = v.z;
+
+	rotateM[0][2] = w.x;
+	rotateM[1][2] = w.y;
+	rotateM[2][2] = w.z;
+
+	uvw = rotateM;
+	//rotateM = glm::transpose(rotateM);
+	
 }
 
 glm::mat4 Camera::getScaleMatrix() {
-    float widthAngle = viewAngle * screenWidthRatio;
-    float xScale = 1.0f / (glm::tan(glm::radians(widthAngle) / 2.0f) * farPlane);
-    float yScale = 1.0f / (glm::tan(glm::radians(viewAngle) / 2.0f) * farPlane);
-    float zScale = 1.0f / farPlane;
-    return glm::scale(glm::mat4(1.0), glm::vec3(xScale, yScale, zScale));
+	if (updateProject)
+		this->updateProjectMatrix();
+	return scaleM;
 }
 
 glm::mat4 Camera::getInverseScaleMatrix() {
-    float widthAngle = viewAngle * screenWidthRatio;
-    float xScale = glm::tan(glm::radians(widthAngle) / 2.0f) * farPlane;
-    float yScale = glm::tan(glm::radians(viewAngle) / 2.0f) * farPlane;
-    float zScale = farPlane;
-    return glm::scale(glm::mat4(1.0), glm::vec3(xScale, yScale, zScale));
+	if (updateProject)
+		this->updateProjectMatrix();
+	glm::mat4 temp = glm::mat4(1.0);
+	temp[0][0] = 1 / scaleM[0][0];
+	temp[1][1] = 1 / scaleM[1][1];
+	temp[2][2] = 1 / scaleM[2][2];
+	return temp;
 }
 
 glm::mat4 Camera::getUnhingeMatrix() {
-    float c = -nearPlane / farPlane;
-	glm::mat4 unhingeMat(1.0);
-    unhingeMat[2][2] = -1 / (c + 1);
-    unhingeMat[3][2] = c / (c + 1);
-    unhingeMat[3][3] = 0;
-    unhingeMat[2][3] = -1;
-	return unhingeMat;
+	if (updateProject)
+		this->updateProjectMatrix();
+	return mppM;
 }
 
 
 glm::mat4 Camera::getProjectionMatrix() {
-	return getUnhingeMatrix() * getScaleMatrix();
+	if (updateProject)
+		this->updateProjectMatrix();
+	glm::mat4 projectM = mppM * scaleM;
+	return projectM;
 }
 
 glm::mat4 Camera::getInverseModelViewMatrix() {
-    return glm::translate(glm::mat4(1.0), eyePoint) * basis;
+	glm::mat4 tInverse = glm::mat4(1.0);
+	tInverse[3][0] = -1 * tranlateM[3][0];
+	tInverse[3][1] = -1 * tranlateM[3][1];
+	tInverse[3][2] = -1 * tranlateM[3][2];
+
+	glm::mat4 rInverse = glm::transpose(rotateM);
+	return tInverse * rInverse;
+}
+
+glm::mat4 Camera::getModelViewMatrix() {
+	glm::mat4 modelViewMat4 = rotateM * tranlateM;
+	return modelViewMat4;
 }
 
 
 void Camera::setViewAngle (float _viewAngle) {
-    viewAngle = _viewAngle;
+	viewAngle = _viewAngle;
+	updateProject = true;
 }
 
 void Camera::setNearPlane (float _nearPlane) {
-    nearPlane = _nearPlane;
-    filmPlanDepth = glm::abs(nearPlane / farPlane);
+	nearPlane = _nearPlane;
+	filmPlanDepth = _nearPlane;
+	updateProject = true;
 }
 
 void Camera::setFarPlane (float _farPlane) {
-    farPlane = _farPlane;
-    filmPlanDepth = glm::abs(nearPlane / farPlane);
+	farPlane = _farPlane;
+	updateProject = true;
 }
 
 void Camera::setScreenSize (int _screenWidth, int _screenHeight) {
-    screenWidth = _screenWidth;
-    screenHeight = _screenHeight;
-    screenWidthRatio = screenWidth / screenHeight;
+	screenWidth = _screenWidth;
+	screenHeight = _screenHeight;
+	screenWidthRatio = (float)_screenWidth / (float)_screenHeight;
+	updateProject = true;
 }
 
-glm::mat4 Camera::getModelViewMatrix() {
-    return glm::transpose(basis) * glm::translate(glm::mat4(1.0), -eyePoint);
+void Camera::updateProjectMatrix() {
+	//scale matrix
+	float widthAngle = viewAngle * screenWidthRatio;
+	scaleM = glm::mat4(1.0f);
+	scaleM[0][0] = 1.0 / (tan((widthAngle / 2) * PI / 180.0) * farPlane);
+	scaleM[1][1] = 1.0 / (tan((viewAngle / 2) * PI / 180.0) * farPlane);
+	scaleM[2][2] = 1.0 / farPlane;
+
+	//unhinge matrix
+	float c = -1 * (nearPlane / farPlane);
+	mppM = glm::mat4(1.0f);
+	mppM[2][2] = -1 / (c + 1);
+	mppM[2][3] = -1;
+	mppM[3][2] = c / (c + 1);
+	mppM[3][3] = 0;
+
+	updateProject = false;
 }
 
 
 void Camera::rotateV(float degrees) {
-    // y: yaw
-    basis = glm::rotate(glm::mat4(1.0), glm::radians(degrees), glm::vec3(basis[1][0], basis[1][1], basis[1][2])) * basis;
+	//uvw = glm::rotate(uvw, glm::radians(degrees), glm::vec3(0,1,0));
+	//lookVector = glm::vec3(-1 * uvw[0][2], -1 * uvw[1][2], -1 * uvw[2][2]);
+	//upVector = glm::vec3(uvw[0][1], uvw[1][1], uvw[2][1]);
+	//this->updateRotateMatrix(lookVector, upVector);
+	rotate(glm::vec3(), v, degrees);
 }
 
 void Camera::rotateU(float degrees) {
-    // x: pitch
-    basis = glm::rotate(glm::mat4(1.0), glm::radians(degrees), glm::vec3(basis[0][0], basis[0][1], basis[0][2])) * basis;
+	//uvw = glm::rotate(uvw, glm::radians(degrees), glm::vec3(-1, 0, 0));
+	//lookVector = glm::vec3(-1 * uvw[0][2], -1 * uvw[1][2], -1 * uvw[2][2]);
+	//upVector = glm::vec3(uvw[0][1], uvw[1][1], uvw[2][1]);
+	//this->updateRotateMatrix(lookVector, upVector);
+	rotate(glm::vec3(), u, degrees);
 }
 
 void Camera::rotateW(float degrees) {
-    // z: roll
-    basis = glm::rotate(glm::mat4(1.0), glm::radians(degrees), glm::vec3(basis[2][0], basis[2][1], basis[2][2])) * basis;
+	//uvw = glm::rotate(uvw, glm::radians(degrees), glm::vec3(0, 0, -1));
+	//lookVector = glm::vec3(-1 * uvw[0][2], -1 * uvw[1][2], -1 * uvw[2][2]);
+	//upVector = glm::vec3(uvw[0][1], uvw[1][1], uvw[2][1]);
+	//this->updateRotateMatrix(lookVector, upVector);
+	rotate(glm::vec3(), glm::vec3(-1 * w.x, -1 * w.y, -1 * w.z), degrees);
 }
 
 void Camera::translate(glm::vec3 v) {
-    eyePoint.x += v.x;
-    eyePoint.y += v.y;
-    eyePoint.z -= v.z;
+	tranlateM = glm::translate(glm::mat4(1.0), glm::vec3(-1 * v.x, -1 * v.y, -1 * v.z));
 }
 
 void Camera::rotate(glm::vec3 point, glm::vec3 axis, float degrees) {
-    glm::mat4 I(1.0);
-    glm::mat4 tOrigin = glm::translate(I, -point);
-    glm::mat4 rotate = glm::rotate(I, glm::radians(degrees), axis);
-    glm::mat4 tPoint = glm::translate(I, point);
-
-    eyePoint = tPoint * rotate * tOrigin * glm::vec4(eyePoint.x, eyePoint.y, eyePoint.z, 1.0f);
-    basis = rotate * basis;
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::rotate(trans, glm::radians(degrees), axis);
+	lookVector = trans * glm::vec4(lookVector, 1.0);
+	upVector = trans * glm::vec4(upVector, 1.0);
+	updateRotateMatrix(lookVector, upVector);
 }
 
+
 glm::vec3 Camera::getEyePoint() {
-	return eyePoint;
+	return eyePos;
 }
 
 glm::vec3 Camera::getLookVector() {
-	return {-basis[2][0], -basis[2][1], -basis[2][2]};
+	return lookVector;
 }
 
 glm::vec3 Camera::getUpVector() {
-	return {basis[1][0], basis[1][1], basis[1][2]};
+	return upVector;
 }
 
 float Camera::getViewAngle() {
@@ -184,8 +237,4 @@ int Camera::getScreenHeight() {
 
 float Camera::getScreenWidthRatio() {
 	return screenWidthRatio;
-}
-
-float Camera::getFilmPlanDepth() {
-    return filmPlanDepth;
 }
