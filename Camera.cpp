@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 
 Camera::Camera() {
@@ -38,7 +39,8 @@ void Camera::setRotUVW(float u, float v, float w) {
 void Camera::orientLookAt(glm::vec3 eyePoint, glm::vec3 lookatPoint, glm::vec3 upVec) {
 	eyePos = eyePoint;
 	lookVector = glm::normalize(glm::vec3(lookatPoint.x - eyePoint.x, lookatPoint.y - eyePoint.y, lookatPoint.z - eyePoint.z));
-	upVector = upVec;
+	glm::vec3 rightVec = glm::normalize(glm::cross(lookVector, glm::vec3(0.0f, 1.0f, 0.0f)));
+	upVector = glm::normalize(glm::cross(rightVec, lookVector));
 
 	tranlateM = glm::translate(glm::mat4(1.0), glm::vec3(-1 * eyePoint.x, -1 * eyePoint.y, -1 * eyePoint.z));
 	updateRotateMatrix(lookVector, upVector);
@@ -47,8 +49,11 @@ void Camera::orientLookAt(glm::vec3 eyePoint, glm::vec3 lookatPoint, glm::vec3 u
 
 void Camera::orientLookVec(glm::vec3 eyePoint, glm::vec3 lookVec, glm::vec3 upVec) {
 	eyePos = eyePoint;
-	lookVector = lookVec;
-	upVector = upVec;
+	lookVector = glm::normalize(lookVec);
+	// glm::vec3 rightVec = glm::normalize(glm::cross(lookVector, glm::vec3(0.0f, 1.0f, 0.0f)));
+    // upVector = glm::normalize(glm::cross(rightVec, lookVector));
+    upVector = upVec;
+    // std::cout << glm::to_string(upVector) << std::endl;
 
 	tranlateM = glm::translate(glm::mat4(1.0), glm::vec3(-1 * eyePoint.x, -1 * eyePoint.y, -1 * eyePoint.z));
 	updateRotateMatrix(lookVector, upVector);
@@ -73,8 +78,6 @@ void Camera::updateRotateMatrix(glm::vec3 lookVec, glm::vec3 upVec) {
 	rotateM[2][2] = w.z;
 
 	uvw = rotateM;
-	//rotateM = glm::transpose(rotateM);
-	
 }
 
 glm::mat4 Camera::getScaleMatrix() {
@@ -167,26 +170,14 @@ void Camera::updateProjectMatrix() {
 
 
 void Camera::rotateV(float degrees) {
-	//uvw = glm::rotate(uvw, glm::radians(degrees), glm::vec3(0,1,0));
-	//lookVector = glm::vec3(-1 * uvw[0][2], -1 * uvw[1][2], -1 * uvw[2][2]);
-	//upVector = glm::vec3(uvw[0][1], uvw[1][1], uvw[2][1]);
-	//this->updateRotateMatrix(lookVector, upVector);
 	rotate(glm::vec3(), v, degrees);
 }
 
 void Camera::rotateU(float degrees) {
-	//uvw = glm::rotate(uvw, glm::radians(degrees), glm::vec3(-1, 0, 0));
-	//lookVector = glm::vec3(-1 * uvw[0][2], -1 * uvw[1][2], -1 * uvw[2][2]);
-	//upVector = glm::vec3(uvw[0][1], uvw[1][1], uvw[2][1]);
-	//this->updateRotateMatrix(lookVector, upVector);
 	rotate(glm::vec3(), u, degrees);
 }
 
 void Camera::rotateW(float degrees) {
-	//uvw = glm::rotate(uvw, glm::radians(degrees), glm::vec3(0, 0, -1));
-	//lookVector = glm::vec3(-1 * uvw[0][2], -1 * uvw[1][2], -1 * uvw[2][2]);
-	//upVector = glm::vec3(uvw[0][1], uvw[1][1], uvw[2][1]);
-	//this->updateRotateMatrix(lookVector, upVector);
 	rotate(glm::vec3(), glm::vec3(-1 * w.x, -1 * w.y, -1 * w.z), degrees);
 }
 
