@@ -138,22 +138,16 @@ glm::vec3 MyGLCanvas::getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, floa
 // FROM PREVIOUS LAB
 double MyGLCanvas::intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
+	glm::vec3 d = glm::vec3(transformInv * glm::vec4(rayV,0));
+	glm::vec3 eye = glm::vec3(transformInv * glm::vec4(eyePointP, 1));
 	// std::cout << glm::to_string(transformInv) << std::endl;
-	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1.0f);
-    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 0.0f);
+	// glm::vec3 eyePointObject = glm::vec3(transformInv * glm::vec4(eyePointP, 1));
+    // glm::vec3 rayVObject = glm::vec3(transformInv * glm::vec4(rayV, 0));
 
-	// double A = glm::dot(rayVObject, rayVObject);
-	// double B = 2 * glm::dot(eyePointObject, rayVObject);
-	// double C = glm::dot(eyePointObject, eyePointObject) - pow(0.5, 2);
-	// double discriminant = pow(B, 2) - (4.0 * A * C);
-
-    glm::vec3 spherePositionObject = glm::vec3(transformInv * glm::vec4(spherepos, 1.0));
-
-    double A = glm::dot(rayVObject, rayVObject);
-    double B = 2.0f * glm::dot(rayVObject, (eyePointObject - spherePositionObject));
-    double C = glm::dot(eyePointObject, eyePointObject) - 2.0f * glm::dot(eyePointObject, spherepos) + glm::dot(spherepos, spherepos) - pow(0.5, 2);
-    double discriminant = pow(B, 2.0f) - (4.0f * A * C);
-
+	double A = glm::dot(d, d);
+	double B = 2 * glm::dot(eye, d);
+	double C = glm::dot(eye, eye) - pow(0.5, 2);
+	double discriminant = pow(B, 2) - (4.0 * A * C);
 
     // std::cout << "Ray: " << rayV.x << "," << rayV.y << "," << rayV.z << std::endl;
     // std::cout << "Eye: " << eyePointP.x << "," << eyePointP.y << "," << eyePointP.z << std::endl;
@@ -208,74 +202,18 @@ bool inBounds(double p1, double p2) {
 //
 //
 float MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
-	// convert ray from world space to object space
-	glm::mat4 transformInv = glm::inverse(transformMatrix); 
-	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
-    	glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 1); // d vec
+	glm::mat4 transformInv = glm::inverse(transformMatrix);
+	glm::vec4 d = transformInv * glm::vec4(rayV,0);
+	glm::vec4 eye = transformInv * glm::vec4(eyePointP, 1);
 
-	// get the distances
-	float t1 = (0.5f - eyePointObject.x) / rayVObject.x;
-	float t2 = (-0.5f - eyePointObject.x) / rayVObject.x;
-	float t3 = (0.5f - eyePointObject.y) / rayVObject.y;
-	float t4 = (-0.5f - eyePointObject.y) / rayVObject.y;
-	float t5 = (0.5f - eyePointObject.z) / rayVObject.z;
-	float t6 = (-0.5f - eyePointObject.z) / rayVObject.z;
-
-	// get the points
-	float min = DBL_MAX;
-	float isect = false;
-	if (t1 >= 0.0) {
-		glm::vec3 p1 = eyePointObject + rayVObject * t1;
-		if (inBounds(p1.y, p1.z)) {
-			min = std::min(min, t1); 
-			isect = true;}}
-	if (t2 >= 0.0) {
-		glm::vec3 p2 = eyePointObject + rayVObject * t2;
-		if (inBounds(p2.y, p2.z)) {
-			min = std::min(min, t2); 
-			isect = true;}}
-	if (t2 >= 0.0) {
-		glm::vec3 p3 = eyePointObject + rayVObject * t3;
-		if (inBounds(p3.x, p3.z)) {
-			min = std::min(min, t3); 
-			isect = true;}}
-	if (t3 >= 0.0) {
-		glm::vec3 p3 = eyePointObject + rayVObject * t3;
-		if (inBounds(p3.x, p3.z)) {
-			min = std::min(min, t4); 
-			isect = true;}}
-	if (t4 >= 0.0) {
-		glm::vec3 p4 = eyePointObject + rayVObject * t4;
-		if (inBounds(p4.x, p4.z)) {
-			min = std::min(min, t4); 
-			isect = true;}}
-	if (t5 >= 0.0) {
-		glm::vec3 p5 = eyePointObject + rayVObject * t5;
-		if (inBounds(p5.y, p5.x)) {
-			min = std::min(min, t5); 
-			isect = true;}}
-	if (t6 >= 0.0) {
-		glm::vec3 p6 = eyePointObject + rayVObject * t6;
-		if (inBounds(p6.y, p6.x)) {
-			min = std::min(min, t5); 
-			isect = true;}}
-
-	if (isect) return min;
-	return -1;
-}
-
-float MyGLCanvas::minPos(float x, float y) {
-    if (x < 0) {
-        if (y < 0)
-            return -1;
-        else 
-            return y;
-    } else {
-        if (y < 0)
-            return x;
-        else 
-            return min(x, y);
-    }
+	float t1 = solveFace(eye, d, 0, 0.5);
+    float t2 = solveFace(eye, d, 1, 0.5);
+    float t3 = solveFace(eye, d, 2, 0.5);
+    float t4 = solveFace(eye, d, 0, -0.5);
+    float t5 = solveFace(eye, d, 1, -0.5);
+    float t6 = solveFace(eye, d, 2, -0.5);
+    
+    return minPos(t1, (minPos(t2, (minPos(t3, (minPos(t4, (minPos(t5, t6)))))))));
 }
 
 float MyGLCanvas::solveFace(glm::vec3 eye, glm::vec3 d, int i, float n) {
@@ -291,8 +229,10 @@ float MyGLCanvas::solveFace(glm::vec3 eye, glm::vec3 d, int i, float n) {
 
 double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
-	glm::vec4 d = transformInv * glm::vec4(rayV,0);
-	glm::vec4 eye = transformInv * glm::vec4(eyePointP, 1);
+	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
+    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 0);
+	glm::vec3 d = rayVObject;
+	glm::vec3 eye = eyePointObject;
     double A = d[0]*d[0] + d[2]*d[2] - (.25*d[1]*d[1]);
     double B = 2*eye[0]*d[0] + 2*eye[2]*d[2] - .5*eye[1]*d[1] + .25*d[1];
     double C = eye[0]*eye[0] + eye[2]*eye[2] - .25*eye[1]*eye[1] + .25*eye[1] - .25*.25;
@@ -318,6 +258,20 @@ double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4
     return minPos(t_sides, t_cap);
 }
 
+float MyGLCanvas::minPos(float x, float y) {
+    if (x < 0) {
+        if (y < 0)
+            return -1;
+        else 
+            return y;
+    } else {
+        if (y < 0)
+            return x;
+        else 
+            return min(x,y);
+    }
+}
+
 
 //
 //
@@ -327,7 +281,7 @@ double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4
 double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
 	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
-    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 1);
+    glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 0);
 	glm::vec3 d = rayVObject;
 	glm::vec3 eye = eyePointObject;
     double A = d[0]*d[0] + d[2]*d[2];
@@ -603,13 +557,15 @@ void MyGLCanvas::renderScene() {
 							//TRANSFORMATION_TRANSLATE, TRANSFORMATION_SCALE,
 							//	TRANSFORMATION_ROTATE, TRANSFORMATION_MATRIX
 							case(TRANSFORMATION_TRANSLATE):
+								//std::cout << my_trans->translate.x << " " << my_trans->translate.y << " " << my_trans->translate.z << std::endl;
 								m = m * glm::translate(glm::mat4(1.0), my_trans->translate);
 								break;
 							case(TRANSFORMATION_SCALE):
+								//std::cout << my_trans->scale.x << " " << my_trans->scale.y << " " << my_trans->scale.z << std::endl;
 								m = m * glm::scale(glm::mat4(1.0), my_trans->scale);
 								break;
 							case(TRANSFORMATION_ROTATE):
-								m = m * glm::rotate(glm::mat4(1.0), glm::degrees(my_trans->angle), my_trans->rotate);
+								m = m * glm::rotate(glm::mat4(1.0), my_trans->angle, my_trans->rotate);
 								break;
 							case(TRANSFORMATION_MATRIX):
 								m = m * my_trans->matrix;
@@ -659,6 +615,10 @@ void MyGLCanvas::renderScene() {
 						break;
 					}
 
+					if (i == pixelWidth / 2 && j == pixelHeight / 2) {
+						std::cout << "t is " << t << std::endl;
+					}
+				
 					if (t > 0 && t < t_min) {
 						// std::cout << "IGGGIGI" << endl;
 						t_min = t;
@@ -668,6 +628,9 @@ void MyGLCanvas::renderScene() {
 						normal = glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,0));
 						glm::normalize(normal);
 						color = computeSceneColor(prim->material, normal, intersection);
+						color.r = 255;
+						color.g = 255;
+						color.b = 0;
 					}
 
 				}
