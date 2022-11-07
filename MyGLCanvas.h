@@ -10,13 +10,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <time.h>
 #include <iostream>
+#include "list"
 
 #include "Shape.h"
 #include "Cube.h"
 #include "Cylinder.h"
 #include "Cone.h"
 #include "Sphere.h"
-#include "list"
 
 #include "Camera.h"
 #include "scene/SceneParser.h"
@@ -41,11 +41,11 @@ public:
 	Camera* camera;
 	SceneParser* parser;
 
-    // what I added
+	// what I added
 	list<ScenePrimitive*> primitives;
 	vector<SceneTransformation*> scenetransformations;
 	vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals;
-    vector<vector<int>> isect_pixels;
+	vector<vector<int>> isect_pixels;
 
 	MyGLCanvas(int x, int y, int w, int h, const char *l = 0);
 	~MyGLCanvas();
@@ -53,15 +53,17 @@ public:
 	void setSegments();
 	void loadSceneFile(const char* filenamePath);
 	void renderScene();
-	void traverse1(SceneNode* root, list<ScenePrimitive*>& primitives, vector<SceneTransformation*>& scenetransformations, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals);
+	SceneColor computeSceneColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos);
+	glm::vec3 computeNormal(glm::vec3 intersection, OBJ_TYPE shape);
+	void traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans);
 
 private:
 	void setpixel(GLubyte* buf, int x, int y, int r, int g, int b);
 
-    glm::vec3 generateRay(int pixelX, int pixelY);
+	glm::vec3 generateRay(int pixelX, int pixelY);
 	glm::vec3 getEyePoint();
 	glm::vec3 getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, float t);
-	double intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix);
+	double intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix);
 
 	void draw();
 
