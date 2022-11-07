@@ -207,7 +207,7 @@ bool inBounds(double p1, double p2) {
 // NEEDS IMPLEMENTING
 //
 //
-double MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
+float MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	// convert ray from world space to object space
 	glm::mat4 transformInv = glm::inverse(transformMatrix); 
 	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
