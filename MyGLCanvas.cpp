@@ -2,6 +2,7 @@
 
 #include "MyGLCanvas.h"
 #include <glm/gtx/string_cast.hpp>
+#include <float.h>
 
 int Shape::m_segmentsX;
 int Shape::m_segmentsY;
@@ -197,19 +198,75 @@ float MyGLCanvas::solveQuadratic(double A, double B, double C) {
 // NEEDS IMPLEMENTING
 //
 //
-double MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
-	glm::mat4 transformInv = glm::inverse(transformMatrix);
-	glm::vec4 d = transformInv * glm::vec4(rayV,0);
-	glm::vec4 eye = transformInv * glm::vec4(eyePointP, 1);
+// double MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
+// 	glm::mat4 transformInv = glm::inverse(transformMatrix);
+// 	glm::vec4 d = transformInv * glm::vec4(rayV,0);
+// 	glm::vec4 eye = transformInv * glm::vec4(eyePointP, 1);
 
-	float t1 = solveFace(eye, d, 0, 0.5);
-    float t2 = solveFace(eye, d, 1, 0.5);
-    float t3 = solveFace(eye, d, 2, 0.5);
-    float t4 = solveFace(eye, d, 0, -0.5);
-    float t5 = solveFace(eye, d, 1, -0.5);
-    float t6 = solveFace(eye, d, 2, -0.5);
+// 	float t1 = solveFace(eye, d, 0, 0.5);
+//     float t2 = solveFace(eye, d, 1, 0.5);
+//     float t3 = solveFace(eye, d, 2, 0.5);
+//     float t4 = solveFace(eye, d, 0, -0.5);
+//     float t5 = solveFace(eye, d, 1, -0.5);
+//     float t6 = solveFace(eye, d, 2, -0.5);
     
-    return min(t1, (min(t2, (min(t3, (min(t4, (min(t5, t6)))))))));
+//     return min(t1, (min(t2, (min(t3, (min(t4, (min(t5, t6)))))))));
+// }
+float MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 cubepos) {
+	// convert ray from world space to object space
+	glm::mat4 transformInv = glm::inverse(transformMatrix); 
+	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
+    	glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 1); // d vec
+
+	// get the distances
+	float t1 = (0.5f - eyePointObject.x) / rayVObject.x;
+	float t2 = (-0.5f - eyePointObject.x) / rayVObject.x;
+	float t3 = (0.5f - eyePointObject.y) / rayVObject.y;
+	float t4 = (-0.5f - eyePointObject.y) / rayVObject.y;
+	float t5 = (0.5f - eyePointObject.z) / rayVObject.z;
+	float t6 = (-0.5f - eyePointObject.z) / rayVObject.z;
+
+	// get the points
+	float min = DBL_MAX;
+	float isect = false;
+	if (t1 >= 0.0) {
+		glm::vec3 p1 = eyePointObject + rayVObject * t1;
+		if (inBounds(p1.y, p1.z)) {
+			min = std::min(min, t1); 
+			isect = true;}}
+	if (t2 >= 0.0) {
+		glm::vec3 p2 = eyePointObject + rayVObject * t2;
+		if (inBounds(p2.y, p2.z)) {
+			min = std::min(min, t2); 
+			isect = true;}}
+	if (t2 >= 0.0) {
+		glm::vec3 p3 = eyePointObject + rayVObject * t3;
+		if (inBounds(p3.x, p3.z)) {
+			min = std::min(min, t3); 
+			isect = true;}}
+	if (t3 >= 0.0) {
+		glm::vec3 p3 = eyePointObject + rayVObject * t3;
+		if (inBounds(p3.x, p3.z)) {
+			min = std::min(min, t4); 
+			isect = true;}}
+	if (t4 >= 0.0) {
+		glm::vec3 p4 = eyePointObject + rayVObject * t4;
+		if (inBounds(p4.x, p4.z)) {
+			min = std::min(min, t4); 
+			isect = true;}}
+	if (t5 >= 0.0) {
+		glm::vec3 p5 = eyePointObject + rayVObject * t5;
+		if (inBounds(p5.y, p5.x)) {
+			min = std::min(min, t5); 
+			isect = true;}}
+	if (t6 >= 0.0) {
+		glm::vec3 p6 = eyePointObject + rayVObject * t6;
+		if (inBounds(p6.y, p6.x)) {
+			min = std::min(min, t5); 
+			isect = true;}}
+
+	if (isect) return min;
+	return -1;
 }
 
 float MyGLCanvas::solveFace(glm::vec3 eye, glm::vec3 d, int i, float n) {
