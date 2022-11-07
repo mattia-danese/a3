@@ -60,16 +60,16 @@ void Camera::orientLookVec(glm::vec3 eyePoint, glm::vec3 lookVec, glm::vec3 upVe
 
 glm::mat4 Camera::getScaleMatrix() {
     float widthAngle = viewAngle * screenWidthRatio;
-    float xScale = 1 / (glm::tan(glm::radians(widthAngle) / 2) * farPlane);
-    float yScale = 1 / (glm::tan(glm::radians(viewAngle) / 2) * farPlane);
-    float zScale = 1 / farPlane;
+    float xScale = 1.0f / (glm::tan(glm::radians(widthAngle) / 2.0f) * farPlane);
+    float yScale = 1.0f / (glm::tan(glm::radians(viewAngle) / 2.0f) * farPlane);
+    float zScale = 1.0f / farPlane;
     return glm::scale(glm::mat4(1.0), glm::vec3(xScale, yScale, zScale));
 }
 
 glm::mat4 Camera::getInverseScaleMatrix() {
     float widthAngle = viewAngle * screenWidthRatio;
-    float xScale = glm::tan(glm::radians(widthAngle) / 2) * farPlane;
-    float yScale = glm::tan(glm::radians(viewAngle) / 2) * farPlane;
+    float xScale = glm::tan(glm::radians(widthAngle) / 2.0f) * farPlane;
+    float yScale = glm::tan(glm::radians(viewAngle) / 2.0f) * farPlane;
     float zScale = farPlane;
     return glm::scale(glm::mat4(1.0), glm::vec3(xScale, yScale, zScale));
 }
