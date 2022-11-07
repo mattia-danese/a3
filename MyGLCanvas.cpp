@@ -284,24 +284,26 @@ double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::
 
     float t_cap1 = (0.5 - eye[1]) / d[1];
     intersect = eye + d * t_cap1;
-    // if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
-    //     t_cap1 = -1;
-    // }
+    if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
+        t_cap1 = -1;
+    }
 
     float t_cap2 = (-0.5 - eye[1]) / d[1];
     intersect = eye + d * t_cap2;
-    // if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
-    //     t_cap2 = -1;
-    // }
+    if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
+        t_cap2 = -1;
+    }
 	float t = t_body;
 	if(t_cap1 > 0 && t_cap2 > 0){
-		t = min(t_cap2, t_cap1);
+		return min(t_cap2, t_cap1);
 	}else if(t_cap1 < 0 && t_cap2 >0){
 		t = t_cap2;
+		return t;
 	}else if(t_cap2 < 0 && t_cap1 >0){
 		t = t_cap1;
+		return t;
 	}
-    return min(t_body, t);
+    return t_body;
 }
 
 
