@@ -85,4 +85,3 @@ private:
 	void updateProjectMatrix();
 };
 #endif
-
