@@ -403,9 +403,9 @@ void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<
 		traverse1(node, my_scene_vals, curr_trans);
 
 		// hit leaf node
-		for (SceneTransformation* my_trans : node->transformations) { //storing transformations in primitive node
-			curr_trans.push_back(my_trans);
-		}
+		// for (SceneTransformation* my_trans : node->transformations) { //storing transformations in primitive node
+		// 	curr_trans.push_back(my_trans);
+		// }
 
 		for (ScenePrimitive* my_prim : node->primitives) { // for all primitives in leaf node, make pair of prim and previously collected trasnformations
 			list<SceneTransformation*> curr_scene_trans = {};
@@ -446,9 +446,9 @@ void MyGLCanvas::renderScene() {
 
 		for (int i = 0; i < pixelWidth; i++) {
 			for (int j = 0; j < pixelHeight; j++) {
-				glm::vec3 intersection_obj = glm::vec4(0);
+                glm::vec3 intersection_obj = glm::vec4(0);
 				glm::vec4 intersection = glm::vec4(0);
-				float t_min = -1;
+				float t_min = FLT_MAX;
 				SceneColor color;
 				color.r = 0, color.g = 0, color.b = 0;
 				//TODO: this is where your ray casting will happen!
@@ -514,7 +514,7 @@ void MyGLCanvas::renderScene() {
 						break;
 					}
 
-					if (t > 0) {
+					if (t > 0 && t < t_min) {
 						// std::cout << "IGGGIGI" << endl;
 						t_min = t;
 						intersection_obj = getIsectPointWorldCoord(eye_pnt, ray, t);
@@ -526,6 +526,7 @@ void MyGLCanvas::renderScene() {
 					}
 
 				}
+
 				if (isectOnly == 1) {
 					setpixel(pixels, i, j, color.r, color.g, color.b);
 				}
