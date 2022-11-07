@@ -212,6 +212,15 @@ float MyGLCanvas::solveQuadratic(double A, double B, double C) {
     
 //     return min(t1, (min(t2, (min(t3, (min(t4, (min(t5, t6)))))))));
 // }
+
+bool inBounds(double p1, double p2) {
+	if (-0.5 <= p1 and p1 <= 0.5) {
+		if (-0.5 <= p2 and p2 <= 0.5)
+			return true;
+	}
+	return false;
+}
+
 float MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 cubepos) {
 	// convert ray from world space to object space
 	glm::mat4 transformInv = glm::inverse(transformMatrix); 
