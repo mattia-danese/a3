@@ -214,7 +214,6 @@ double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4
 	if (!(intersect[1] > -0.5 && intersect[1] < 0.5)) {
         t_s = -1;
     }
-
     intersect = eye + d * t_c;
     if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
         t_c = -1;
@@ -355,7 +354,7 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
         parser->getLightData(m, lData);
         SceneColor li = lData.color;
         glm::vec3 Lhati = lData.pos - pos;
-        glm::normalize(Lhati);
+        Lhati = glm::normalize(Lhati);
 
         if (dot(Nhat, Lhati) > 0) {
             color.r += (kd * Od.r * li.r * dot(Nhat, Lhati));  
