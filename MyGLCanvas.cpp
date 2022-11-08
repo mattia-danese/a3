@@ -243,12 +243,12 @@ double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::
     double A = d[0]*d[0] + d[2]*d[2];
     double B = 2*eye[0]*d[0] + 2*eye[2]*d[2];
     double C = eye[0]*eye[0] + eye[2]*eye[2] - 0.25;
-    float t_body = quadraticForm(A, B, C);
+    float tb = quadraticForm(A, B, C);
 
 
-    glm::vec3 intersect = eye + d * t_body;
+    glm::vec3 intersect = eye + d * tb;
     if (!(intersect[1] > -0.5 && intersect[1] < 0.5)) {
-        t_body = -1;
+        tb = -1;
     }
 
     float cap_one = (0.5 - eye[1]) / d[1];
@@ -261,7 +261,7 @@ double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::
 	if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
         cap_two = -1;
     }
-    return mPos(t_body, mPos(cap_one, cap_two));
+    return mPos(tb, mPos(cap_one, cap_two));
 }
 
 
@@ -327,27 +327,23 @@ void MyGLCanvas::setpixel(GLubyte* buf, int x, int y, int r, int g, int b) {
 }
 
 SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos) {
-
+	SceneGlobalData data;
+	parser->getGlobalData(data);
 	SceneColor color;
 	color.r = 0;
 	color.g = 0;
 	color.b = 0;
-	color.a = 255;
 
-	SceneGlobalData data;
-	parser->getGlobalData(data);
-
+	// constant coeffecients we need
 	float ka = data.ka;
 	float ks = data.ks;
 	float kd = data.kd;
-
 	SceneColor Oa = material.cAmbient;
 	SceneColor Os = material.cSpecular;
 	SceneColor Od = material.cDiffuse;
-
-    int nl = parser->getNumLights();
 	// best attempt at doing the lighting equation
-    for (int m = 0; m < nl; m++) {
+	// iterate through the lights and perform the equation in the handout
+    for (int m = 0; m < parser->getNumLights(); m++) {
         SceneLightData lData;
         parser->getLightData(m, lData);
         SceneColor li = lData.color;
@@ -375,15 +371,13 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 }
 
 glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
-	    switch(shape) {
-		case SHAPE_CYLINDER:
+		if(shape == SHAPE_CYLINDER){
 		    if (IN_RANGE(inst[1], 0.5))
                return glm::vec3(0, 1, 0);
            if (IN_RANGE(inst[1], -0.5))
                return glm::vec3(0, -1, 0);
 			return glm::vec3(inst[0], 0, inst[2]);
-           break; 
-        case SHAPE_CUBE: {
+		}else if (shape == SHAPE_CUBE){
 			float inr = .4999;
             if (inst[0] > inr)
                 return glm::vec3(1, 0, 0);
@@ -397,22 +391,18 @@ glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
                 return glm::vec3(0, 0, 1);
             if (inst[2] < -inr)
                 return glm::vec3(0, 0, -1);
-            }
-            break;
-		case SHAPE_SPHERE:
+		}else if (shape == SHAPE_SPHERE){
            return glm::vec3(inst[0], inst[1], inst[2]);
-           break;
-        case SHAPE_CONE: {
+		}else if(shape == SHAPE_CONE){
 			// base of cone
-           if (IN_RANGE(inst[1], -0.5))
+           if (IN_RANGE(inst[1], -0.5)){
                return glm::vec3(0, -1, 0);
-           glm::vec3 v1 = glm::vec3(inst[0], 0, inst[2]);
-           v1 = glm::normalize(v1);
-		   // slope at point
-           glm::vec3 v2 = glm::vec3(0, .5, 0);
-           return v1 + v2; }
-           break; 
-    }
+		   }
+           glm::vec3 vec1 = glm::vec3(inst[0], 0, inst[2]);
+           vec1 = glm::normalize(vec1);
+           glm::vec3 vec2 = glm::vec3(0, .5, 0);
+           return vec1 + vec2; 
+		   }
 }
 
 void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans)
@@ -513,8 +503,9 @@ void MyGLCanvas::renderScene() {
 						t_min = t;
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
-						glm::vec3 intersection = glm::vec3(transpose(m) * glm::vec4(intersection_obj, 1));
+						// normalize the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1)));
+						glm::vec3 intersection = glm::vec3(transpose(m) * glm::vec4(intersection_obj, 1));
 						color = computeColor(prim->material, normal, intersection);
 					}
 
