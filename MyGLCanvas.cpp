@@ -201,24 +201,22 @@ double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
 	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
     glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 0);
-	glm::vec3 d = rayVObject;
-	glm::vec3 eye = eyePointObject;
-    double A = d[0]*d[0] + d[2]*d[2] - (.25*d[1]*d[1]);
-    double B = 2*eye[0]*d[0] + 2*eye[2]*d[2] - .5*eye[1]*d[1] + .25*d[1];
-    double C = eye[0]*eye[0] + eye[2]*eye[2] - .25*eye[1]*eye[1] + .25*eye[1] - .25*.25;
+	glm::vec3 d_v = rayVObject;
+	glm::vec3 eye_o = eyePointObject;
+    double A = d_v[0]*d_v[0] + d_v[2]*d_v[2] - (.25*d_v[1]*d_v[1]);
+    double B = 2*eye_o[0]*d_v[0] + 2*eye_o[2]*d_v[2] - .5*eye_o[1]*d_v[1] + .25*d_v[1];
+    double C = eye_o[0]*eye_o[0] + eye_o[2]*eye_o[2] - .25*eye_o[1]*eye_o[1] + .25*eye_o[1] - .25*.25;
 
     float t_s = quadraticForm(A, B, C);
-	float t_c = (-0.5 - eye[1]) / d[1];
-
-    glm::vec3 intersect = eye +  d *t_s;
+	float t_c = (-0.5 - eye_o[1]) / d_v[1];
+    glm::vec3 intersect = eye_o +  d_v *t_s;
 	if (!(intersect[1] > -0.5 && intersect[1] < 0.5)) {
         t_s = -1;
     }
-    intersect = eye + d * t_c;
+    intersect = eye_o + d_v * t_c;
     if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
         t_c = -1;
     }
-    
     return mPos(t_s, t_c);
 }
 
@@ -379,24 +377,25 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 	    switch(shape) {
 		case SHAPE_CYLINDER:
-		     if (IN_RANGE(inst[1], 0.5))
+		    if (IN_RANGE(inst[1], 0.5))
                return glm::vec3(0, 1, 0);
            if (IN_RANGE(inst[1], -0.5))
                return glm::vec3(0, -1, 0);
 			return glm::vec3(inst[0], 0, inst[2]);
            break; 
         case SHAPE_CUBE: {
-            if (inst[0] > .4999)
+			float inr = .4999;
+            if (inst[0] > inr)
                 return glm::vec3(1, 0, 0);
-            if (inst[0] < -.4999)
+            if (inst[0] < -inr)
                 return glm::vec3(-1, 0, 0);
-            if (inst[1] > .4999)
+            if (inst[1] > inr)
                 return glm::vec3(0, 1, 0);
-            if (inst[1] < -.4999)
+            if (inst[1] < -inr)
                 return glm::vec3(0, -1, 0);
-            if (inst[2] > .4999)
+            if (inst[2] > inr)
                 return glm::vec3(0, 0, 1);
-            if (inst[2] < -.4999)
+            if (inst[2] < -inr)
                 return glm::vec3(0, 0, -1);
             }
             break;
