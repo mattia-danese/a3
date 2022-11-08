@@ -455,6 +455,7 @@ void MyGLCanvas::renderScene() {
 
 		for (int i = 0; i < pixelWidth; i++) {
 			for (int j = 0; j < pixelHeight; j++) {
+                bool hit = false;
                 glm::vec3 intersection_obj = glm::vec4(0);
 				glm::vec4 intersection = glm::vec4(0);
 				float t_min = FLT_MAX;
@@ -500,6 +501,8 @@ void MyGLCanvas::renderScene() {
 					}
 				
 					if (t > 0 && t < t_min) {
+                        hit = true;
+
 						t_min = t;
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
@@ -511,12 +514,24 @@ void MyGLCanvas::renderScene() {
 
 				}
 
-				if (isectOnly == 1) {
-					setpixel(pixels, i, j, color.r, color.g, color.b);
-				}
-				else {
-					setpixel(pixels, i, j, 255, 255, 255);
-				}
+                if (hit) {
+                    if (isectOnly == 1) {
+                        setpixel(pixels, i, j, 255, 255, 255);
+                    }
+                    else {
+                        setpixel(pixels, i, j, color.r, color.g, color.b);
+                    }
+                }
+                else {
+                    setpixel(pixels, i, j, 0, 0, 0);
+                }
+
+				// if (isectOnly == 1) {
+				// 	setpixel(pixels, i, j, color.r, color.g, color.b);
+				// }
+				// else {
+				// 	setpixel(pixels, i, j, 255, 255, 255);
+				// }
 			}
 		}
 	std::cout << "render complete" << endl;
