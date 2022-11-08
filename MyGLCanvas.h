@@ -53,17 +53,17 @@ public:
 	void setSegments();
 	void loadSceneFile(const char* filenamePath);
 	void renderScene();
-	SceneColor computeSceneColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos);
-	glm::vec3 computeNormal(glm::vec3 intersection, OBJ_TYPE shape);
+	SceneColor computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos);
+	glm::vec3 computeNormal(glm::vec3 inst, OBJ_TYPE shape);
 	void traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans);
 	float intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 cubepos);
 	double intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	double intersectCone(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	double intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
-	float solveQuadratic(double A, double B, double C);
+	float quadraticForm(double A, double B, double C);
 // 	double intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
-	float intersectFace(glm::vec3 eye, glm::vec3 d, int i, float n);
-	float minPos(float x, float y);
+	float intersectsq(glm::vec3 eye, glm::vec3 d, int i, float n);
+	float mPos(float x, float y);
 
 private:
 	void setpixel(GLubyte* buf, int x, int y, int r, int g, int b);

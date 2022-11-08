@@ -125,8 +125,6 @@ glm::vec3 MyGLCanvas::generateRay(int pixelX, int pixelY) {
 
 	glm::vec4 dHat = glm::normalize(worldFPP - worldEye);
 
-	// std::cout << "X: " << dHat.x << "," << "Y: " << dHat.y << ',' << "Z: " << dHat.z << std::endl;
-
 	return glm::vec3(dHat.x, dHat.y, dHat.z);
 }
 
@@ -140,22 +138,12 @@ double MyGLCanvas::intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::ma
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
 	glm::vec3 d = glm::vec3(transformInv * glm::vec4(rayV,0));
 	glm::vec3 eye = glm::vec3(transformInv * glm::vec4(eyePointP, 1));
-	// std::cout << glm::to_string(transformInv) << std::endl;
-	// glm::vec3 eyePointObject = glm::vec3(transformInv * glm::vec4(eyePointP, 1));
-    // glm::vec3 rayVObject = glm::vec3(transformInv * glm::vec4(rayV, 0));
 
 	double A = glm::dot(d, d);
 	double B = 2 * glm::dot(eye, d);
 	double C = glm::dot(eye, eye) - pow(0.5, 2);
 	double discriminant = pow(B, 2) - (4.0 * A * C);
 
-    // std::cout << "Ray: " << rayV.x << "," << rayV.y << "," << rayV.z << std::endl;
-    // std::cout << "Eye: " << eyePointP.x << "," << eyePointP.y << "," << eyePointP.z << std::endl;
-
-    // std::cout << "A: " << A << std::endl;
-    // std::cout << "B: " << B << std::endl;
-    // std::cout << "C: " << C << std::endl;
-    // std::cout << "discriminant: " << discriminant << std::endl;
 
 	if (discriminant < 0) {return -1;}
     else {
@@ -168,50 +156,37 @@ double MyGLCanvas::intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::ma
     }
 }
 
-float MyGLCanvas::solveQuadratic(double A, double B, double C) {
+float MyGLCanvas::quadraticForm(double A, double B, double C) {
     double det = B*B - 4.0*A*C;
-    //std::cout << "det is  " << det << std::endl;
     if (det > 0) {
-        double t0 = (-1.0*B + sqrt(det)) / (2.0*A);
-        double t1 = (-1.0*B - sqrt(det)) / (2.0*A);
-        // std::cout << "t0 is  " << t0 << std::endl;
-		// std::cout << "t1 is  " << t1 << std::endl;
-        return min(t0, t1);
-    } else if (det == 0) {
-        double t = (-B + sqrt(det)) / (2.0*A);
-
-        return t;
+        double t1 = (-1.0*B + sqrt(det)) / (2.0*A);
+        double t2 = (-1.0*B - sqrt(det)) / (2.0*A);
+		if (t1 < 0) {return t2;}
+        if (t2 < 0) {return t1;}
+        return std::min(t1, t2);
     } else {
         return -1; 
     }   
 }
 
-
-bool inBounds(double p1, double p2) {
-	if (-0.5 <= p1 and p1 <= 0.5) {
-		if (-0.5 <= p2 and p2 <= 0.5)
-			return true;
-	}
-	return false;
-}
-
-
 float MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
-	glm::vec4 d = transformInv * glm::vec4(rayV,0);
+	glm::vec4 d_v = transformInv * glm::vec4(rayV,0);
 	glm::vec4 eye = transformInv * glm::vec4(eyePointP, 1);
 
-	float t1 = intersectFace(eye, d, 0, 0.5);
-    float t2 = intersectFace(eye, d, 1, 0.5);
-    float t3 = intersectFace(eye, d, 2, 0.5);
-    float t4 = intersectFace(eye, d, 0, -0.5);
-    float t5 = intersectFace(eye, d, 1, -0.5);
-    float t6 = intersectFace(eye, d, 2, -0.5);
+	float t4 = intersectsq(eye, d_v, 0, -0.5);
+    float t5 = intersectsq(eye, d_v, 1, -0.5);
+    float t6 = intersectsq(eye, d_v, 2, -0.5);
+
+	float t1 = intersectsq(eye, d_v, 0, 0.5);
+    float t2 = intersectsq(eye, d_v, 1, 0.5);
+    float t3 = intersectsq(eye, d_v, 2, 0.5);
     
-    return minPos(t1, (minPos(t2, (minPos(t3, (minPos(t4, (minPos(t5, t6)))))))));
+	//which face did we intersect
+    return mPos(t1, (mPos(t2, (mPos(t3, (mPos(t4, (mPos(t5, t6)))))))));
 }
 
-float MyGLCanvas::intersectFace(glm::vec3 eye, glm::vec3 d, int i, float n) {
+float MyGLCanvas::intersectsq(glm::vec3 eye, glm::vec3 d, int i, float n) {
     float t = (n - eye[i]) / d[i];
     glm::vec3 intersect = eye + d * t;
     if ((intersect[(i + 1) % 3] < 0.5 && intersect[(i + 1) % 3] > -0.5) &&
@@ -232,28 +207,23 @@ double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4
     double B = 2*eye[0]*d[0] + 2*eye[2]*d[2] - .5*eye[1]*d[1] + .25*d[1];
     double C = eye[0]*eye[0] + eye[2]*eye[2] - .25*eye[1]*eye[1] + .25*eye[1] - .25*.25;
 
-    float t_sides = solveQuadratic(A, B, C);
-    //     std::cout << "Ray: " << rayV.x << "," << rayV.y << "," << rayV.z << std::endl;
-    // std::cout << "Eye: " << eyePointP.x << "," << eyePointP.y << "," << eyePointP.z << std::endl;
+    float t_s = quadraticForm(A, B, C);
+	float t_c = (-0.5 - eye[1]) / d[1];
 
-    // std::cout << "A: " << A << std::endl;
-    // std::cout << "B: " << B << std::endl;
-    // std::cout << "C: " << C << std::endl;
-    glm::vec3 intersect = eye +  d *t_sides;
+    glm::vec3 intersect = eye +  d *t_s;
 	if (!(intersect[1] > -0.5 && intersect[1] < 0.5)) {
-        t_sides = -1;
+        t_s = -1;
     }
 
-    float t_cap = (-0.5 - eye[1]) / d[1];
-    intersect = eye + d * t_cap;
+    intersect = eye + d * t_c;
     if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
-        t_cap = -1;
+        t_c = -1;
     }
     
-    return minPos(t_sides, t_cap);
+    return mPos(t_s, t_c);
 }
 
-float MyGLCanvas::minPos(float x, float y) {
+float MyGLCanvas::mPos(float x, float y) {
     if (x < 0) {
         if (y < 0)
             return -1;
@@ -267,12 +237,6 @@ float MyGLCanvas::minPos(float x, float y) {
     }
 }
 
-
-//
-//
-// NEEDS IMPLEMENTING
-//
-//
 double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
 	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
@@ -282,47 +246,25 @@ double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::
     double A = d[0]*d[0] + d[2]*d[2];
     double B = 2*eye[0]*d[0] + 2*eye[2]*d[2];
     double C = eye[0]*eye[0] + eye[2]*eye[2] - 0.25;
+    float t_body = quadraticForm(A, B, C);
 
 
-    // std::cout << "Ray: " << rayV.x << "," << rayV.y << "," << rayV.z << std::endl;
-    // std::cout << "Eye: " << eyePointP.x << "," << eyePointP.y << "," << eyePointP.z << std::endl;
-
-    // std::cout << "A: " << A << std::endl;
-    // std::cout << "B: " << B << std::endl;
-    // std::cout << "C: " << C << std::endl;
-
-    float t_body = solveQuadratic(A, B, C);
-
-	// return t_body;
-
-	    // std::cout << "discriminant: " << discriminant << std::endl;
     glm::vec3 intersect = eye + d * t_body;
     if (!(intersect[1] > -0.5 && intersect[1] < 0.5)) {
         t_body = -1;
     }
 
-    float t_cap1 = (0.5 - eye[1]) / d[1];
-    intersect = eye + d * t_cap1;
+    float cap_one = (0.5 - eye[1]) / d[1];
+	float cap_two = (-0.5 - eye[1]) / d[1];
+    intersect = eye + d * cap_one;
     if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
-        t_cap1 = -1;
+        cap_one = -1;
     }
-
-    float t_cap2 = (-0.5 - eye[1]) / d[1];
-    intersect = eye + d * t_cap2;
-    if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
-        t_cap2 = -1;
+	intersect = eye + d * cap_two;
+	if (!(intersect[0]*intersect[0] + intersect[2]*intersect[2] <= 0.25)) {
+        cap_two = -1;
     }
-	// float t = t_body;
-	// if(t_cap1 > 0 && t_cap2 > 0){
-	// 	return min(t_cap2, t_cap1);
-	// }else if(t_cap1 < 0 && t_cap2 >0){
-	// 	t = t_cap2;
-	// 	return t;
-	// }else if(t_cap2 < 0 && t_cap1 >0){
-	// 	t = t_cap1;
-	// 	return t;
-	// }
-    return minPos(t_body, minPos(t_cap2, t_cap1));
+    return mPos(t_body, mPos(cap_one, cap_two));
 }
 
 
@@ -387,17 +329,7 @@ void MyGLCanvas::setpixel(GLubyte* buf, int x, int y, int r, int g, int b) {
 	buf[(y*pixelWidth + x) * 3 + 2] = (GLubyte)b;
 }
 
-SceneColor MyGLCanvas::computeSceneColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos) {
-
-	SceneGlobalData data;
-	parser->getGlobalData(data);
-
-	float ka = data.ka;
-
-	float kd = data.kd;
-
-	SceneColor Oa = material.cAmbient;
-	SceneColor Od = material.cDiffuse;
+SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos) {
 
 	SceneColor color;
 	color.r = 0;
@@ -405,31 +337,35 @@ SceneColor MyGLCanvas::computeSceneColor(SceneMaterial material, glm::vec3 Nhat,
 	color.b = 0;
 	color.a = 255;
 
-    int nLights = parser->getNumLights();
-    for (int m = 0; m < nLights; m++) {
+	SceneGlobalData data;
+	parser->getGlobalData(data);
+
+	float ka = data.ka;
+	float ks = data.ks;
+	float kd = data.kd;
+
+	SceneColor Oa = material.cAmbient;
+	SceneColor Os = material.cSpecular;
+	SceneColor Od = material.cDiffuse;
+
+    int nl = parser->getNumLights();
+	// best attempt at doing the lighting equation
+    for (int m = 0; m < nl; m++) {
         SceneLightData lData;
         parser->getLightData(m, lData);
-        SceneColor lm = lData.color;
-        glm::vec3 Lhatm = lData.pos - pos;
-        glm::normalize(Lhatm);
-//         std::cout << "nhat is  " << Nhat[0] << Nhat[1] << Nhat[2] << std::endl;
-        //std::cout << lm.g << std::endl;
-       	if (Od.r > 1.0) Od.r = 1.0;
-       	if (Od.g > 1.0) Od.g = 1.0;
-       	if (Od.b > 1.0) Od.b = 1.0;
-       	if (lm.r > 1.0) lm.r = 1.0;
-       	if (lm.g > 1.0) lm.g = 1.0;
-       	if (lm.b > 1.0) lm.b = 1.0;
+        SceneColor li = lData.color;
+        glm::vec3 Lhati = lData.pos - pos;
+        glm::normalize(Lhati);
 
-        if (dot(Nhat, Lhatm) > 0) {
-            color.r += (kd * Od.r * lm.r * dot(Nhat, Lhatm));  
-            color.g += (kd * Od.g * lm.g * dot(Nhat, Lhatm));  
-            color.b += (kd * Od.b * lm.b * dot(Nhat, Lhatm));  
+        if (dot(Nhat, Lhati) > 0) {
+            color.r += (kd * Od.r * li.r * dot(Nhat, Lhati));  
+            color.g += (kd * Od.g * li.g * dot(Nhat, Lhati));  
+            color.b += (kd * Od.b * li.b * dot(Nhat, Lhati));  
+			color.r += (ks * Os.r);
+			color.g += (ks * Os.g);
+			color.b += (ks * Os.b);
         }
     }
-    if (Oa.r > 1.0) Oa.r = 1.0;
-   	if (Oa.g > 1.0) Oa.g = 1.0;
-   	if (Oa.b > 1.0) Oa.b = 1.0;
     color.r += ka * (Oa.r);
     color.g += ka * (Oa.g);
     color.b += ka * (Oa.b);
@@ -441,41 +377,43 @@ SceneColor MyGLCanvas::computeSceneColor(SceneMaterial material, glm::vec3 Nhat,
 	return color;
 }
 
-glm::vec3 MyGLCanvas::computeNormal(glm::vec3 intersection, OBJ_TYPE shape) {
+glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 	    switch(shape) {
+		case SHAPE_CYLINDER:
+		     if (IN_RANGE(inst[1], 0.5))
+               return glm::vec3(0, 1, 0);
+           if (IN_RANGE(inst[1], -0.5))
+               return glm::vec3(0, -1, 0);
+			return glm::vec3(inst[0], 0, inst[2]);
+           break; 
         case SHAPE_CUBE: {
-            if (intersection[0] > .4999)
+            if (inst[0] > .4999)
                 return glm::vec3(1, 0, 0);
-            if (intersection[0] < -.4999)
+            if (inst[0] < -.4999)
                 return glm::vec3(-1, 0, 0);
-            if (intersection[1] > .4999)
+            if (inst[1] > .4999)
                 return glm::vec3(0, 1, 0);
-            if (intersection[1] < -.4999)
+            if (inst[1] < -.4999)
                 return glm::vec3(0, -1, 0);
-            if (intersection[2] > .4999)
+            if (inst[2] > .4999)
                 return glm::vec3(0, 0, 1);
-            if (intersection[2] < -.4999)
+            if (inst[2] < -.4999)
                 return glm::vec3(0, 0, -1);
             }
             break;
-        case SHAPE_CYLINDER:
-           if (IN_RANGE(intersection[1], 0.5))
-               return glm::vec3(0, 1, 0);
-           if (IN_RANGE(intersection[1], -0.5))
-               return glm::vec3(0, -1, 0);
-           return glm::vec3(intersection[0], 0, intersection[2]);
-           break; 
+		case SHAPE_SPHERE:
+           return glm::vec3(inst[0], inst[1], inst[2]);
+           break;
         case SHAPE_CONE: {
-           if (IN_RANGE(intersection[1], -0.5))
+			// base of cone
+           if (IN_RANGE(inst[1], -0.5))
                return glm::vec3(0, -1, 0);
-           glm::vec3 v1 = glm::vec3(intersection[0], 0, intersection[2]);
-           glm::normalize(v1);
+           glm::vec3 v1 = glm::vec3(inst[0], 0, inst[2]);
+           v1 = glm::normalize(v1);
+		   // slope at point
            glm::vec3 v2 = glm::vec3(0, .5, 0);
            return v1 + v2; }
            break; 
-        case SHAPE_SPHERE:
-           return glm::vec3(intersection[0], intersection[1], intersection[2]);
-           break;
     }
 }
 
@@ -490,12 +428,6 @@ void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<
 		}
 
 		traverse1(node, my_scene_vals, curr_trans);
-
-		// hit leaf node
-		// for (SceneTransformation* my_trans : node->transformations) { //storing transformations in primitive node
-		// 	curr_trans.push_back(my_trans);
-		// }
-
 		for (ScenePrimitive* my_prim : node->primitives) { // for all primitives in leaf node, make pair of prim and previously collected trasnformations
 			list<SceneTransformation*> curr_scene_trans = {};
 			my_scene_vals.push_back(pair<ScenePrimitive*, vector<SceneTransformation*>>(my_prim, curr_trans));
@@ -550,11 +482,9 @@ void MyGLCanvas::renderScene() {
 					for (SceneTransformation* my_trans : my_p.second) {
 						switch (my_trans->type) {
 							case(TRANSFORMATION_TRANSLATE):
-								//std::cout << my_trans->translate.x << " " << my_trans->translate.y << " " << my_trans->translate.z << std::endl;
 								m = m * glm::translate(glm::mat4(1.0), my_trans->translate);
 								break;
 							case(TRANSFORMATION_SCALE):
-								//std::cout << my_trans->scale.x << " " << my_trans->scale.y << " " << my_trans->scale.z << std::endl;
 								m = m * glm::scale(glm::mat4(1.0), my_trans->scale);
 								break;
 							case(TRANSFORMATION_ROTATE):
@@ -568,47 +498,26 @@ void MyGLCanvas::renderScene() {
 					glm::vec3 center = glm::vec3(0.0f);
 					switch (prim->type) {
 					case SHAPE_CUBE:
-					//if (i == pixelWidth / 2 && j == pixelHeight / 2) {
 						t = intersectCube(eye_pnt, ray, m, center);
-					// 	std::cout << "eye point is " << eye_pnt.x << " " << eye_pnt.y << " " << eye_pnt.z << " " << std::endl;
-					// 	std::cout << "ray is " << ray.x << " " << ray.y << " " << ray.z << " " << std::endl;
-					// 	std::cout << "t is " << t << std::endl;
-					// }
 						break;
 					case SHAPE_CYLINDER:
-					//if (i == pixelWidth / 2 && j == pixelHeight / 2) {
 						t = intersectCylinder(eye_pnt, ray, m, center);
-					// 		std::cout << "eye point is " << eye_pnt.x << " " << eye_pnt.y << " " << eye_pnt.z << " " << std::endl;
-					// 	std::cout << "ray is " << ray.x << " " << ray.y << " " << ray.z << " " << std::endl;
-					// 	std::cout << "t is " << t << std::endl;
-					// }
 						break;
 					case SHAPE_CONE:
-						// cout << "here " << endl;
-						// std::cout << "eye point is " << eye_pnt.x << " " << eye_pnt.y << " " << eye_pnt.z << " " << std::endl;
-						// std::cout << "ray is " << ray.x << " " << ray.y << " " << ray.z << " " << std::endl;
-						// if (i == pixelWidth / 2 && j == pixelHeight / 2) {
 						t = intersectCone(eye_pnt, ray, m, center);
-						// }
 						break;
 					case SHAPE_SPHERE:
-							t = intersectSphere(eye_pnt, ray, m, center);
+						t = intersectSphere(eye_pnt, ray, m, center);
 						break;
-					}
-
-					if (i == pixelWidth / 2 && j == pixelHeight / 2) {
-						std::cout << "t is " << t << std::endl;
 					}
 				
 					if (t > 0 && t < t_min) {
-						// std::cout << "IGGGIGI" << endl;
 						t_min = t;
-						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::vec4(eye_pnt,1.0) * glm::inverse(m)), glm::vec3(glm::vec4(ray,0) * glm::inverse(m)), t);
+						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
 						glm::vec3 intersection = glm::vec3(transpose(m) * glm::vec4(intersection_obj, 1));
-						normal = glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,0));
-						glm::normalize(normal);
-						color = computeSceneColor(prim->material, normal, intersection);
+						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1)));
+						color = computeColor(prim->material, normal, intersection);
 					}
 
 				}
