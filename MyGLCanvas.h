@@ -53,7 +53,7 @@ public:
 	void setSegments();
 	void loadSceneFile(const char* filenamePath);
 	void renderScene();
-	SceneColor computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos);
+	SceneColor computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos, glm::vec3 ray);
 	glm::vec3 computeNormal(glm::vec3 inst, OBJ_TYPE shape);
 	void traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans);
 	float intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 cubepos);

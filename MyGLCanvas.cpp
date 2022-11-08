@@ -326,13 +326,15 @@ void MyGLCanvas::setpixel(GLubyte* buf, int x, int y, int r, int g, int b) {
 	buf[(y*pixelWidth + x) * 3 + 2] = (GLubyte)b;
 }
 
-SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos) {
+SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos, glm::vec3 ray) {
 	SceneGlobalData data;
 	parser->getGlobalData(data);
 	SceneColor color;
 	color.r = 0;
 	color.g = 0;
 	color.b = 0;
+
+	ray = glm::normalize(ray);
 
 	// constant coeffecients we need
 	float ka = data.ka;
@@ -341,6 +343,7 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 	SceneColor Oa = material.cAmbient;
 	SceneColor Os = material.cSpecular;
 	SceneColor Od = material.cDiffuse;
+	float shininess = material.shininess;
 	// best attempt at doing the lighting equation
 	// iterate through the lights and perform the equation in the handout
     for (int m = 0; m < parser->getNumLights(); m++) {
@@ -349,23 +352,48 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
         SceneColor li = lData.color;
         glm::vec3 Lhati = lData.pos - pos;
         Lhati = glm::normalize(Lhati);
+		glm::vec3 Ri = glm::normalize(Lhati - (2.0f * glm::dot(Lhati, Nhat) * Nhat));
+		float RiV = glm::dot(Ri, glm::normalize(camera->getLookVector()));
 
         if (dot(Nhat, Lhati) > 0) {
+			/*
             color.r += (kd * Od.r * li.r * dot(Nhat, Lhati));  
             color.g += (kd * Od.g * li.g * dot(Nhat, Lhati));  
             color.b += (kd * Od.b * li.b * dot(Nhat, Lhati));  
-			color.r += (ks * Os.r);
-			color.g += (ks * Os.g);
-			color.b += (ks * Os.b);
+			color.r += (ks * Os.r) * pow(RiV, shininess);
+			color.g += (ks * Os.g) * pow(RiV, shininess);
+			color.b += (ks * Os.b) * pow(RiV, shininess);
+			*/
+
+			color.r += li.r * (kd * Od.r * dot(Nhat, Lhati) + (ks * Os.r) * pow(RiV, shininess));
+			color.g += li.g * (kd * Od.g * dot(Nhat, Lhati) + (ks * Os.g) * pow(RiV, shininess));
+			color.b += li.b * (kd * Od.b * dot(Nhat, Lhati) + (ks * Os.b) * pow(RiV, shininess));
         }
     }
     color.r += ka * (Oa.r);
     color.g += ka * (Oa.g);
     color.b += ka * (Oa.b);
 
-    color.r *= 255;
-    color.g *= 255;
-    color.b *= 255;
+	if (color.r * 255 > 255){
+		color.r = 255;
+	}
+	else{
+		color.r *= 255;
+	}
+    
+    if (color.g * 255 > 255){
+		color.g = 255;
+	}
+	else{
+		color.g *= 255;
+	}
+
+	if (color.b * 255 > 255){
+		color.b = 255;
+	}
+	else{
+		color.b *= 255;
+	}
 
 	return color;
 }
@@ -509,7 +537,7 @@ void MyGLCanvas::renderScene() {
 						// normalize the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1)));
 						glm::vec3 intersection = glm::vec3(transpose(m) * glm::vec4(intersection_obj, 1));
-						color = computeColor(prim->material, normal, intersection);
+						color = computeColor(prim->material, normal, intersection, ray);
 					}
 
 				}
