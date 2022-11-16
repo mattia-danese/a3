@@ -205,7 +205,7 @@ double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4
 	glm::vec3 eye_o = eyePointObject;
     double A = d_v[0]*d_v[0] + d_v[2]*d_v[2] - (.25*d_v[1]*d_v[1]);
     double B = 2*eye_o[0]*d_v[0] + 2*eye_o[2]*d_v[2] - .5*eye_o[1]*d_v[1] + .25*d_v[1];
-    double C = eye_o[0]*eye_o[0] + eye_o[2]*eye_o[2] - .25*eye_o[1]*eye_o[1] + .25*eye_o[1] - .25*.25;
+    double C = eye_o[0]*eye_o[0] + eye_o[2]*eye_o[2] - .25*pow(-eye_o[1]+.5, 2);
 
     float t_s = quadraticForm(A, B, C);
 	float t_c = (-0.5 - eye_o[1]) / d_v[1];
@@ -536,7 +536,7 @@ void MyGLCanvas::renderScene() {
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
 						// normalize the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1)));
-						glm::vec3 intersection = glm::vec3(transpose(m) * glm::vec4(intersection_obj, 1));
+						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
 						color = computeColor(prim->material, normal, intersection, ray);
 					}
 
