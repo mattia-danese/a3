@@ -400,15 +400,14 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 }
 
 glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
+	float inr = .4999;
 		if(shape == SHAPE_CYLINDER){
-			float inr = .4999;
             if (inst[1] > inr)
                 return glm::vec3(0, 1, 0);
             if (inst[1] < -inr)
                 return glm::vec3(0, -1, 0);
 			return glm::vec3(inst[0], 0, inst[2]);
 		}else if (shape == SHAPE_CUBE){
-			float inr = .4999;
             if (inst[0] > inr)
                 return glm::vec3(1, 0, 0);
             if (inst[0] < -inr)
@@ -424,10 +423,11 @@ glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 		}else if (shape == SHAPE_SPHERE){
            return glm::vec3(inst[0], inst[1], inst[2]);
 		}else if(shape == SHAPE_CONE){
-			// base of cone
-           if (IN_RANGE(inst[1], -0.5)){
-               return glm::vec3(0, -1, 0);
-		   }
+			if (inst[1] > inr)
+                return glm::vec3(0, 1, 0);
+		    if (inst[1] < -inr){
+                return glm::vec3(0, -1, 0);
+			}
            glm::vec3 vec1 = glm::vec3(inst[0], 0, inst[2]);
            vec1 = glm::normalize(vec1);
            glm::vec3 vec2 = glm::vec3(0, .5, 0);
