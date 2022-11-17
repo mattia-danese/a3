@@ -401,10 +401,11 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 
 glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 		if(shape == SHAPE_CYLINDER){
-		    if (IN_RANGE(inst[1], 0.5))
-               return glm::vec3(0, 1, 0);
-           if (IN_RANGE(inst[1], -0.5))
-               return glm::vec3(0, -1, 0);
+			float inr = .4999;
+            if (inst[1] > inr)
+                return glm::vec3(0, 1, 0);
+            if (inst[1] < -inr)
+                return glm::vec3(0, -1, 0);
 			return glm::vec3(inst[0], 0, inst[2]);
 		}else if (shape == SHAPE_CUBE){
 			float inr = .4999;
