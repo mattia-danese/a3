@@ -119,13 +119,14 @@ glm::vec3 MyGLCanvas::generateRay(int pixelX, int pixelY) {
 
 	//likely stems from here
 	glm::mat4 inv =  camera->getInverseModelViewMatrix() * camera->getInverseScaleMatrix();
-	glm::vec4 worldFPP = inv * glm::vec4(lookAt, 0.0f);
+	glm::vec4 worldFPP = inv * glm::vec4(lookAt, 1.0f);
 	// already in world coordinates
-	glm::vec4 worldEye = glm::vec4(getEyePoint(), 1.0);
+	glm::vec4 worldEye = glm::vec4(getEyePoint(), 1.0f);
 
 	glm::vec4 dHat = glm::normalize(worldFPP - worldEye);
 
 	return glm::vec3(dHat.x, dHat.y, dHat.z);
+    // lab has -dHat.y .. not sure which is best
 }
 
 glm::vec3 MyGLCanvas::getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, float t) {
@@ -137,7 +138,7 @@ glm::vec3 MyGLCanvas::getIsectPointWorldCoord(glm::vec3 eye, glm::vec3 ray, floa
 double MyGLCanvas::intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
 	glm::vec3 d = glm::vec3(transformInv * glm::vec4(rayV,0));
-	glm::vec3 eye = glm::vec3(transformInv * glm::vec4(eyePointP, 1));
+	glm::vec3 eye = glm::vec3(transformInv * glm::vec4(eyePointP, 1.0f));
 
 	double A = glm::dot(d, d);
 	double B = 2 * glm::dot(eye, d);
@@ -172,7 +173,7 @@ float MyGLCanvas::quadraticForm(double A, double B, double C) {
 float MyGLCanvas::intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
 	glm::vec4 d_v = transformInv * glm::vec4(rayV,0);
-	glm::vec4 eye = transformInv * glm::vec4(eyePointP, 1);
+	glm::vec4 eye = transformInv * glm::vec4(eyePointP, 1.0f);
 
 	float t4 = intersectsq(eye, d_v, 0, -0.5);
     float t5 = intersectsq(eye, d_v, 1, -0.5);
@@ -199,7 +200,7 @@ float MyGLCanvas::intersectsq(glm::vec3 eye, glm::vec3 d, int i, float n) {
 
 double MyGLCanvas::intersectCone (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
-	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
+	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1.0f);
     glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 0);
 	glm::vec3 d_v = rayVObject;
 	glm::vec3 eye_o = eyePointObject;
@@ -236,7 +237,7 @@ float MyGLCanvas::mPos(float x, float y) {
 
 double MyGLCanvas::intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos) {
 	glm::mat4 transformInv = glm::inverse(transformMatrix);
-	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1);
+	glm::vec3 eyePointObject = transformInv * glm::vec4(eyePointP, 1.0f);
     glm::vec3 rayVObject = transformInv * glm::vec4(rayV, 0);
 	glm::vec3 d = rayVObject;
 	glm::vec3 eye = eyePointObject;
@@ -532,10 +533,10 @@ void MyGLCanvas::renderScene() {
                         hit = true;
 
 						t_min = t;
-						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t);
+						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
 						// normalize the normal
-						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1)));
+						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal, 0) since normal is a vector
 						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
 						color = computeColor(prim->material, normal, intersection, ray);
 					}
