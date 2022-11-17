@@ -159,7 +159,7 @@ double MyGLCanvas::intersectSphere (glm::vec3 eyePointP, glm::vec3 rayV, glm::ma
 
 float MyGLCanvas::quadraticForm(double A, double B, double C) {
     double det = B*B - 4.0*A*C;
-    if (det > 0) {
+    if (det >= 0) {
         double t1 = (-1.0*B + sqrt(det)) / (2.0*A);
         double t2 = (-1.0*B - sqrt(det)) / (2.0*A);
 		if (t1 < 0) {return t2;}
@@ -536,7 +536,7 @@ void MyGLCanvas::renderScene() {
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
 						// normalize the normal
-						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal, 0) since normal is a vector
+						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
 						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
 						color = computeColor(prim->material, normal, intersection, ray);
 					}
