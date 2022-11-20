@@ -6,7 +6,7 @@
 
 int Shape::m_segmentsX;
 int Shape::m_segmentsY;
-
+//change
 MyGLCanvas::MyGLCanvas(int x, int y, int w, int h, const char *l) : Fl_Gl_Window(x, y, w, h, l) {
 	mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
 	
@@ -343,6 +343,11 @@ bool MyGLCanvas::shadowCheck(glm::vec3 pos, glm::vec3 Lhati){
 	return hit;
 }
 
+void MyGLCanvas::getst(int* s, int* t, int u, int v, int w, int h, int i, int j){
+	*s = (u*w*i) % w;
+	*t = (v*h*j) % h;
+}
+
 SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos, glm::vec3 ray) {
 	SceneGlobalData data;
 	parser->getGlobalData(data);
@@ -350,7 +355,8 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 	color.r = 0;
 	color.g = 0;
 	color.b = 0;
-
+	// std::cout << texture->isUsed << std::endl;
+	// std::cout << texture->repeatU << std::endl;
 	// ray = glm::normalize(ray);
 
 	glm::vec3 look = cameraData.look;
@@ -374,10 +380,17 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 		parser->getLightData(m, lData);
         SceneColor li = lData.color;
         glm::vec3 Lhati = lData.pos - pos;
+		if(lData.type == LIGHT_DIRECTIONAL){
+				Lhati = -lData.dir - pos;
+		}
+		if(lData.type == LIGHT_POINT){
+			Lhati = lData.pos - pos;
+		}
+
 		if(shadowCheck(pos, Lhati)){
 			continue;
 		}
-        Lhati = glm::normalize(Lhati);
+		Lhati = glm::normalize(Lhati);
 		glm::vec3 Ri = glm::normalize(Lhati - (2.0f * glm::dot(Lhati, Nhat) * Nhat));
 		float RiV = glm::dot(Ri, glm::normalize(camera->getLookVector()));
 
@@ -488,7 +501,7 @@ glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 		   }
 }
 
-void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans)
+void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans, map<string, ppm*>* p_m)
 {
 	if (root == nullptr)
 		return;
@@ -498,9 +511,14 @@ void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<
 			curr_trans.push_back(my_trans);
 		}
 
-		traverse1(node, my_scene_vals, curr_trans);
+		traverse1(node, my_scene_vals, curr_trans, p_m);
 		for (ScenePrimitive* my_prim : node->primitives) { // for all primitives in leaf node, make pair of prim and previously collected trasnformations
 			list<SceneTransformation*> curr_scene_trans = {};
+			if(my_prim->material.textureMap->isUsed){
+				if (p_m->find(my_prim->material.textureMap->filename) == p_m->end()) {
+					p_m->insert(pair<string, ppm*>(my_prim->material.textureMap->filename, new ppm(my_prim->material.textureMap->filename)));
+				}
+			}
 			my_scene_vals.push_back(pair<ScenePrimitive*, vector<SceneTransformation*>>(my_prim, curr_trans));
 		}
 		for (SceneTransformation* my_trans : node->transformations) { // func will recurse back up, delete transformations
@@ -560,9 +578,11 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						if(shadow_check){
 							return color;
 						}
+						prim_m = prim;
 						t_min = t;
 						//object coordinates intersection
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
+						ist_min = intersection_obj;
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
 						//  the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
@@ -598,9 +618,8 @@ void MyGLCanvas::renderScene() {
 		if (my_scene_vals.empty()) {
 			std::cout << "calling traverse!" << endl;
 			SceneNode* root = parser->getRootNode();
-			traverse1(root, my_scene_vals, scenetransformations);
+			traverse1(root, my_scene_vals, scenetransformations, &p_map);
 		}
-
 		for (int i = 0; i < pixelWidth; i++) {
 			for (int j = 0; j < pixelHeight; j++) {
                 int hit = 0;
@@ -611,6 +630,26 @@ void MyGLCanvas::renderScene() {
 				glm::vec3 ray = generateRay(i, j);
 				depth_fresh = depth;
 				color = loopObjects(my_scene_vals, eye_pnt, ray, &hit, false);
+				
+				float blend = 0;
+				if(prim_m != nullptr && prim_m->material.textureMap->isUsed){
+				SceneMaterial mat = prim_m->material;
+				SceneFileMap* texture = mat.textureMap;
+				ppm* my_ppm = p_map[prim_m->material.textureMap->filename];
+				
+				blend = mat.blend;
+				//std::cout << "ist_min: " << ist_min.x <<  " " << ist_min.y << " " << ist_min.z << std::endl;
+
+				float s = fmod((ist_min.x*my_ppm->getWidth()*texture->repeatU), my_ppm->getWidth());
+				float t = fmod((ist_min.y*my_ppm->getHeight()*texture->repeatV), my_ppm->getHeight());
+
+				SceneColor tex_c = my_ppm->getPixel(s, t);
+				//std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
+				glm::vec3 color_n = glm::vec3(color.r, color.g, color.b) * (1-blend) + glm::vec3(tex_c.r, tex_c.g, tex_c.b)*blend;
+				color.r = color_n.x;
+				color.g = color_n.y;
+				color.b = color_n.z;
+				}
 
                 if (hit) {
                     if (isectOnly == 1) {
@@ -623,13 +662,6 @@ void MyGLCanvas::renderScene() {
                 else {
                     setpixel(pixels, i, j, 0, 0, 0);
                 }
-
-				// if (isectOnly == 1) {
-				// 	setpixel(pixels, i, j, color.r, color.g, color.b);
-				// }
-				// else {
-				// 	setpixel(pixels, i, j, 255, 255, 255);
-				// }
 			}
 		}
 	std::cout << "render complete" << endl;
