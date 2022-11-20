@@ -555,7 +555,7 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						break;
 					}
 				
-					if (t > 0 && (t_min < 0 || t < t_min)) {
+					if (t > 0.01 && (t_min < 0 || t < t_min)) {
                         *hit = true;
 						if(shadow_check){
 							return color;
