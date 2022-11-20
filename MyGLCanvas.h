@@ -69,8 +69,9 @@ public:
 	float intersectsq(glm::vec3 eye, glm::vec3 d, int i, float n);
 	glm::vec3 camLookAt(int pixelX, int pixelY);
 	SceneColor bound(SceneColor c);
+	bool shadowCheck(glm::vec3 pos, glm::vec3 Lhati);
 
-	SceneColor loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit);
+	SceneColor loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit, bool shadow_check);
 	float mPos(float x, float y);
 
 private:

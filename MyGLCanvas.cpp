@@ -335,6 +335,14 @@ SceneColor MyGLCanvas::bound(SceneColor c) {
     return c;
 }
 
+//vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit
+bool MyGLCanvas::shadowCheck(glm::vec3 pos, glm::vec3 Lhati){
+	int hit = 0;
+	// std::cout << "here" << std::endl;
+	loopObjects(my_scene_vals, pos, Lhati, &hit, true);
+	return hit;
+}
+
 SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos, glm::vec3 ray) {
 	SceneGlobalData data;
 	parser->getGlobalData(data);
@@ -361,11 +369,14 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 	float shininess = material.shininess;
 	// best attempt at doing the lighting equation
 	// iterate through the lights and perform the equation in the handout
+	SceneLightData lData;
     for (int m = 0; m < parser->getNumLights(); m++) {
-        SceneLightData lData;
-        parser->getLightData(m, lData);
+		parser->getLightData(m, lData);
         SceneColor li = lData.color;
         glm::vec3 Lhati = lData.pos - pos;
+		if(shadowCheck(pos, Lhati)){
+			continue;
+		}
         Lhati = glm::normalize(Lhati);
 		glm::vec3 Ri = glm::normalize(Lhati - (2.0f * glm::dot(Lhati, Nhat) * Nhat));
 		float RiV = glm::dot(Ri, glm::normalize(camera->getLookVector()));
@@ -388,13 +399,13 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 
 
 	SceneColor Ir;
-    if (depth_fresh > 0) {
+    if (depth_fresh > 0){
 		// std::cout << "recursing" << std::endl;
         depth_fresh--;
         glm::vec3 d = Vhat - 2 * (glm::dot(Vhat, Nhat)) * Nhat;
          d = glm::normalize(d);
 		int hit = 0;
-        Ir = loopObjects(my_scene_vals, pos, d, &hit);
+        Ir = loopObjects(my_scene_vals, pos, d, &hit, false);
 		Ir = bound(Ir);
     } else { 
         Ir.r = 0;
@@ -498,7 +509,7 @@ void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<
 	}
 }
 
-SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit){
+SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit, bool shadow_check){
 	        glm::vec3 intersection_obj = glm::vec4(0);
 			glm::vec4 intersection = glm::vec4(0);
 			SceneColor color;
@@ -506,6 +517,7 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 			*hit = false;
 			float t_min = FLT_MAX;
 			for (pair<ScenePrimitive*, vector<SceneTransformation*>> my_p : my_scene_vals) {
+				// std::cout << "here" << std::endl;
 					ScenePrimitive* prim = my_p.first;
 					float t = -1;
 					glm::mat4 m = glm::mat4(1.0);
@@ -543,13 +555,16 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						break;
 					}
 				
-					if (t >= 0 && (t_min < 0 || t < t_min)) {
+					if (t > 0 && (t_min < 0 || t < t_min)) {
                         *hit = true;
+						if(shadow_check){
+							return color;
+						}
 						t_min = t;
 						//object coordinates intersection
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
-						// normalize the normal
+						//  the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
 						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
 						color = computeColor(prim->material, normal, intersection, ray);
@@ -595,7 +610,7 @@ void MyGLCanvas::renderScene() {
 				//TODO: this is where your ray casting will happen!
 				glm::vec3 ray = generateRay(i, j);
 				depth_fresh = depth;
-				color = loopObjects(my_scene_vals, eye_pnt, ray, &hit);
+				color = loopObjects(my_scene_vals, eye_pnt, ray, &hit, false);
 
                 if (hit) {
                     if (isectOnly == 1) {
