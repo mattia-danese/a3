@@ -39,6 +39,7 @@ public:
 	Fl_Button* openFileButton;
 	Fl_Slider* segmentsXSlider;
 	Fl_Slider* segmentsYSlider;
+	Fl_Slider* depthSlider;
 
 	Fl_Slider* rotUSlider;
 	Fl_Slider* rotVSlider;
@@ -210,8 +211,17 @@ MyAppWindow::MyAppWindow(int W, int H, const char*L) : Fl_Window(W, H, L) {
 		isectButton = new Fl_Check_Button(0, 0, pack->w() - 20, 20, "isectOnly");
 		isectButton->value(canvas->isectOnly);
 		isectButton->callback(toggleCB, (void*)(&(canvas->isectOnly)));
+		Fl_Box *depthTextbox = new Fl_Box(0, 0, pack->w() - 20, 20, "Recursive Depth");
+		depthSlider = new Fl_Value_Slider(0, 0, pack->w() - 20, 20, "");
+		depthSlider->align(FL_ALIGN_TOP);
+		depthSlider->type(FL_HOR_SLIDER);
+		depthSlider->bounds(0, 5);
+		depthSlider->step(1);
+		depthSlider->value(canvas->depth);
+		depthSlider->callback(segmentsCB, (void*)(&(canvas->depth)));
 
 	buttonsPack->end();
+
 
 	Fl_Pack* radioPack = new Fl_Pack(w() - 100, 30, 100, h(), "Shape");
 	radioPack->box(FL_DOWN_FRAME);

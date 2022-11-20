@@ -29,6 +29,8 @@ public:
 
 	int isectOnly;
 	int segmentsX, segmentsY;
+	int depth;
+	int depth_fresh;
 	float scale;
 
 	OBJ_TYPE objType;
@@ -46,6 +48,8 @@ public:
 	vector<SceneTransformation*> scenetransformations;
 	vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals;
 	vector<vector<int>> isect_pixels;
+	glm::vec3 lookAt;
+	SceneCameraData cameraData;
 
 	MyGLCanvas(int x, int y, int w, int h, const char *l = 0);
 	~MyGLCanvas();
@@ -60,9 +64,13 @@ public:
 	double intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	double intersectCone(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	double intersectCylinder (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
-	float quadraticForm(double A, double B, double C);
+	float quadraticForm(float A, float B, float C);
 // 	double intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	float intersectsq(glm::vec3 eye, glm::vec3 d, int i, float n);
+	glm::vec3 camLookAt(int pixelX, int pixelY);
+	SceneColor bound(SceneColor c);
+
+	SceneColor loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit);
 	float mPos(float x, float y);
 
 private:
