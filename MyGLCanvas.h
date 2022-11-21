@@ -17,6 +17,7 @@
 #include "Cylinder.h"
 #include "Cone.h"
 #include "Sphere.h"
+#include "ppm.h"
 
 #include "Camera.h"
 #include "scene/SceneParser.h"
@@ -50,6 +51,9 @@ public:
 	vector<vector<int>> isect_pixels;
 	glm::vec3 lookAt;
 	SceneCameraData cameraData;
+	map<string, ppm*> p_map;
+	glm::vec3 ist_min;
+	ScenePrimitive* prim_m;
 
 	MyGLCanvas(int x, int y, int w, int h, const char *l = 0);
 	~MyGLCanvas();
@@ -59,7 +63,7 @@ public:
 	void renderScene();
 	SceneColor computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos, glm::vec3 ray);
 	glm::vec3 computeNormal(glm::vec3 inst, OBJ_TYPE shape);
-	void traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans);
+	void traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans,map<string, ppm*>* p_m);
 	float intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 cubepos);
 	double intersectSphere(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
 	double intersectCone(glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 spherepos);
@@ -70,6 +74,7 @@ public:
 	glm::vec3 camLookAt(int pixelX, int pixelY);
 	SceneColor bound(SceneColor c);
 	bool shadowCheck(glm::vec3 pos, glm::vec3 Lhati);
+	SceneColor textureMap(SceneColor color, ScenePrimitive* prim);
 
 	SceneColor loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit, bool shadow_check);
 	float mPos(float x, float y);

@@ -373,7 +373,13 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
     for (int m = 0; m < parser->getNumLights(); m++) {
 		parser->getLightData(m, lData);
         SceneColor li = lData.color;
-        glm::vec3 Lhati = lData.pos - pos;
+        glm::vec3 Lhati;
+		if(lData.type == LIGHT_DIRECTIONAL){
+			Lhati = glm::vec3(-lData.dir.x, -lData.dir.y, -lData.dir.z);
+		}
+		if(lData.type == LIGHT_POINT){
+			Lhati = lData.pos - pos;
+		}
 		if(shadowCheck(pos, Lhati)){
 			continue;
 		}
@@ -382,15 +388,6 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 		float RiV = glm::dot(Ri, glm::normalize(camera->getLookVector()));
 
         if (dot(Nhat, Lhati) > 0) {
-			/*
-            color.r += (kd * Od.r * li.r * dot(Nhat, Lhati));  
-            color.g += (kd * Od.g * li.g * dot(Nhat, Lhati));  
-            color.b += (kd * Od.b * li.b * dot(Nhat, Lhati));  
-			color.r += (ks * Os.r) * pow(RiV, shininess);
-			color.g += (ks * Os.g) * pow(RiV, shininess);
-			color.b += (ks * Os.b) * pow(RiV, shininess);
-			*/
-
 			color.r += li.r * (kd * Od.r * dot(Nhat, Lhati) + (ks * Os.r) * pow(RiV, shininess));
 			color.g += li.g * (kd * Od.g * dot(Nhat, Lhati) + (ks * Os.g) * pow(RiV, shininess));
 			color.b += li.b * (kd * Od.b * dot(Nhat, Lhati) + (ks * Os.b) * pow(RiV, shininess));
@@ -448,6 +445,72 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 	return color;
 }
 
+static inline glm::vec3 computePrimaryTexDir(glm::vec3 normal)
+{
+    glm::vec3 a = glm::cross(normal, glm::vec3(1, 0, 0));
+    glm::vec3 b = glm::cross(normal, glm::vec3(0, 1, 0));
+
+    glm::vec3 max_ab = glm::dot(a, a) < glm::dot(b, b) ? b : a;
+
+    glm::vec3 c = glm::cross(normal, glm::vec3(0, 0, 1));
+
+    return glm::normalize(glm::dot(max_ab, max_ab) < glm::dot(c, c) ? c : max_ab);
+}
+
+
+SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
+		float blend = 0;
+		glm::vec3 color_n;
+		SceneColor tex_color_blend;
+		if(prim != nullptr && prim->material.textureMap->isUsed && !p_map.empty() && ist_min != glm::vec3(INFINITY)){
+					SceneMaterial mat = prim->material;
+					SceneFileMap* texture = mat.textureMap;
+					ppm* my_ppm;
+					my_ppm = p_map[prim_m->material.textureMap->filename];
+					blend = mat.blend;
+					float u = 0;
+					float v = 0;
+					float s = 0;
+					float t = 0;
+					glm::vec3 v_cor;
+					glm::vec3 u_cor;
+					glm::vec3 n;
+					float rawU;
+					float theta;
+					//std::cout << " here" << std::endl;
+					switch (prim->type) {
+					case SHAPE_CUBE:
+						u = ist_min.x;
+						v = ist_min.y;
+						// std::cout << "u " << u << " v " << v << std::endl;
+ 						break;
+					case SHAPE_CYLINDER:
+					 	theta = .5 + atan2(ist_min.x, ist_min.z);
+        				rawU = theta / (2.0f * PI);
+        				u = 1 - (rawU + 0.5);
+       					v = fmod(.5 + ist_min[1], 1);
+						break;
+					case SHAPE_CONE:
+						break;
+					case SHAPE_SPHERE:
+						u = 0.5 + (atan2(ist_min.x, ist_min.z) / (2.0f * PI));
+						v = 0.5 + (asin(-ist_min.y * 2.0f) / PI);
+						break;
+					}
+					s = fmod((u*my_ppm->getWidth()*texture->repeatU), (float)my_ppm->getWidth());
+					t = fmod((v*my_ppm->getHeight()*texture->repeatV), (float)my_ppm->getHeight());
+					SceneColor tex_c = my_ppm->getPixel(s, t);
+					//std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
+					color_n = glm::vec3(color.r, color.g, color.b) * (1-blend) + glm::vec3(tex_c.r, tex_c.g, tex_c.b)*blend;
+				}else{
+					return color;
+				}
+				tex_color_blend.r = color_n.x;
+				tex_color_blend.g = color_n.y;
+				tex_color_blend.b = color_n.z;
+				return tex_color_blend;
+}
+
 glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 	// just a small floating point value to capture the base of the objects
 	// in object coordinate space
@@ -488,7 +551,7 @@ glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 		   }
 }
 
-void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans)
+void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans, map<string, ppm*>* p_m)
 {
 	if (root == nullptr)
 		return;
@@ -498,9 +561,17 @@ void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<
 			curr_trans.push_back(my_trans);
 		}
 
-		traverse1(node, my_scene_vals, curr_trans);
+		traverse1(node, my_scene_vals, curr_trans, p_m);
 		for (ScenePrimitive* my_prim : node->primitives) { // for all primitives in leaf node, make pair of prim and previously collected trasnformations
 			list<SceneTransformation*> curr_scene_trans = {};
+			if(my_prim->material.textureMap->isUsed){
+				std::cout << "here?" << std::endl;
+				std::cout << my_prim->material.textureMap->isUsed << std::endl;
+				std::cout << my_prim->material.textureMap->filename << std::endl;
+				if (p_m->find(my_prim->material.textureMap->filename) == p_m->end()) {
+					p_m->insert(pair<string, ppm*>(my_prim->material.textureMap->filename, new ppm(my_prim->material.textureMap->filename)));
+				}
+			}
 			my_scene_vals.push_back(pair<ScenePrimitive*, vector<SceneTransformation*>>(my_prim, curr_trans));
 		}
 		for (SceneTransformation* my_trans : node->transformations) { // func will recurse back up, delete transformations
@@ -564,10 +635,13 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						//object coordinates intersection
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
+						ist_min = intersection_obj;
+						prim_m = prim;
 						//  the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
 						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
 						color = computeColor(prim->material, normal, intersection, ray);
+						color = textureMap(color, prim);
 					}
 
 				}
@@ -592,14 +666,18 @@ void MyGLCanvas::renderScene() {
 	if (pixels != NULL) {
 		delete pixels;
 	}
+	ist_min = glm::vec3(INFINITY);
+
+	
 	pixels = new GLubyte[pixelWidth  * pixelHeight * 3];
 	memset(pixels, 0, pixelWidth  * pixelHeight * 3);
 		glm::vec3  eye_pnt = getEyePoint();
-		if (my_scene_vals.empty()) {
-			std::cout << "calling traverse!" << endl;
-			SceneNode* root = parser->getRootNode();
-			traverse1(root, my_scene_vals, scenetransformations);
-		}
+				if (my_scene_vals.empty()) {
+					std::cout << "calling traverse!" << endl;
+					SceneNode* root = parser->getRootNode();
+					traverse1(root, my_scene_vals, scenetransformations, &p_map);
+				}
+			std::cout << "traverse done!" << endl;
 
 		for (int i = 0; i < pixelWidth; i++) {
 			for (int j = 0; j < pixelHeight; j++) {
@@ -611,7 +689,6 @@ void MyGLCanvas::renderScene() {
 				glm::vec3 ray = generateRay(i, j);
 				depth_fresh = depth;
 				color = loopObjects(my_scene_vals, eye_pnt, ray, &hit, false);
-
                 if (hit) {
                     if (isectOnly == 1) {
                         setpixel(pixels, i, j, 255, 255, 255);
