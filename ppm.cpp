@@ -147,18 +147,24 @@ void ppm::setPixel(int x, int y, int r, int g, int b){
 }
 
 SceneColor ppm::getPixel(float s, float t){
-
+	// std::cout << "s " << s << " t " << t << std::endl;
+	// std::cout << "width " << width << "height " << height << std::endl;
 	SceneColor ret;
 	if(s > width || t > height){
-		// std:cout << "out of range" << std::endl;
+		std:cout << "out of range" << std::endl;
 		ret.r = 0;
 		ret.g = 0;
 		ret.b = 0;
     return ret;
   }else{
-    ret.r = color[((int)s*3)+height*((int)t*3)];
-    ret.g = color[((int)s*3)+height*((int)t*3)+1];
-    ret.b = color[((int)s*3)+height*((int)t*3)+2];
+	int s_i = (int)s;
+	int t_i = (int)t;
+// std::cout << "getting pixel at " 
+//               << s << "," << t << "from (" <<
+//               (int)color[s_i*t_i] << "," << (int)color[s_i*t_i+1] << "," << (int)color[s_i*t_i+2] << ")";
+    ret.r = color[s_i*3+width*t_i*3];
+    ret.g = color[s_i*3+width*t_i*3+1];
+    ret.b = color[s_i*3+width*t_i*3+2];
 	return ret;
   }
 }

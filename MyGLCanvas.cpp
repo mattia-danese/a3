@@ -441,7 +441,6 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 	else{
 		color.b *= 255;
 	}
-
 	return color;
 }
 
@@ -514,8 +513,8 @@ void MyGLCanvas::convert_xyz_to_cube_uv(float x, float y, float z, int *index, f
   }
 
   // Convert range from -1 to 1 to 0 to 1
-  *u = 0.25f * (uc / maxAxis + 1.0f);
-  *v = 0.25f * (vc / maxAxis + 1.0f);
+  *u = .5f * (uc / maxAxis + 1.0f);
+  *v = .5f * (vc / maxAxis + 1.0f);
 }
 
 
@@ -529,6 +528,13 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                     SceneFileMap* texture = mat.textureMap;
                     ppm* my_ppm;
                     my_ppm = p_map[prim_m->material.textureMap->filename];
+					// for(int i = 0; i < my_ppm->getWidth(); i++){
+					// 	for(int j = 0; j < my_ppm->getHeight(); j++){
+					// 		SceneColor px = my_ppm->getPixel(i, my_ppm->getHeight()-j);
+					// 		setpixel(pixels, i, j, px.r, px.g, px.b);
+					// 		//setpixel(pixels, i,  my_ppm->getHeight()-j, px.r, px.g, px.b);
+					// 	}
+					// }
                     blend = mat.blend;
                     float u = 0;
                     float v = 0;
@@ -568,10 +574,11 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                         v = 0.5 + (asin(-ist_min.y * 2.0f) / PI);
                         break;
                     }
+					
                     s = fmod((u*(float)my_ppm->getWidth()*texture->repeatU), (float)my_ppm->getWidth());
                     t = fmod((v*(float)my_ppm->getHeight()*texture->repeatV), (float)my_ppm->getHeight());
-                    //std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
-                    SceneColor tex_c = my_ppm->getPixel(s+.5, t+.5);
+                    // std::cout << "s: " << s <<  " " << t << " " << t << std::endl;
+                    SceneColor tex_c = my_ppm->getPixel(s, t);
                     if(tex_c.r == 0 && tex_c.g == 0 && tex_c.b == 0){
                         return color;
                     }
@@ -625,6 +632,8 @@ glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
            return vec1 + vec2; 
 		   }
 }
+
+
 
 void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans, map<string, ppm*>* p_m)
 {
@@ -710,16 +719,17 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						//object coordinates intersection
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
 						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
-						ist_min = intersection_obj;
+
 						prim_m = prim;
 						//  the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
 						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
+						ist_min = intersection;
 						color = computeColor(prim->material, normal, intersection, ray);
-						color = textureMap(color, prim);
 					}
 
 				}
+				color = textureMap(color, prim_m);
 				return color;
 }
 

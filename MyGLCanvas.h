@@ -78,7 +78,6 @@ public:
 	bool shadowCheck(glm::vec3 pos, glm::vec3 Lhati);
 	SceneColor textureMap(SceneColor color, ScenePrimitive* prim);
 	void convert_xyz_to_cube_uv(float x, float y, float z, int *index, float *u, float *v);
-
 	SceneColor loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit, bool shadow_check);
 	float mPos(float x, float y);
 
