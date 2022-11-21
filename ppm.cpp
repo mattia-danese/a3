@@ -150,6 +150,7 @@ SceneColor ppm::getPixel(float s, float t){
 
 	SceneColor ret;
 	if(s > width || t > height){
+		// std:cout << "out of range" << std::endl;
 		ret.r = 0;
 		ret.g = 0;
 		ret.b = 0;

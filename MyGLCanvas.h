@@ -54,6 +54,7 @@ public:
 	map<string, ppm*> p_map;
 	glm::vec3 ist_min;
 	ScenePrimitive* prim_m;
+	glm::vec3 cube_n;
 
 	MyGLCanvas(int x, int y, int w, int h, const char *l = 0);
 	~MyGLCanvas();
@@ -76,6 +77,7 @@ public:
 	SceneColor bound(SceneColor c);
 	bool shadowCheck(glm::vec3 pos, glm::vec3 Lhati);
 	SceneColor textureMap(SceneColor color, ScenePrimitive* prim);
+	void convert_xyz_to_cube_uv(float x, float y, float z, int *index, float *u, float *v);
 
 	SceneColor loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit, bool shadow_check);
 	float mPos(float x, float y);
