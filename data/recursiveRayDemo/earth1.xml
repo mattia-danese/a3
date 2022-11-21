@@ -21,7 +21,11 @@
 	<object type="tree" name="root">
 		<transblock>
 			<object type="primitive" name="cube" >
+<<<<<<< HEAD
 				<texture file="./data/recursiveRayDemo/image/earth.ppm" u="1" v="1"/>
+=======
+			  <texture file="./data/recursiveRayDemo/image/earth.ppm" u="2" v="2"/>
+>>>>>>> 04149609e3919df31b0f8399a11414e86ed7401d
       			<blend value="0.7"/>
 				<diffuse r="1" g="0" b="0"/>
 			</object>

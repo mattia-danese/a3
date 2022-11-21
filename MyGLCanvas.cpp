@@ -499,6 +499,7 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
 					}
 					s = fmod((u*my_ppm->getWidth()*texture->repeatU), (float)my_ppm->getWidth());
 					t = fmod((v*my_ppm->getHeight()*texture->repeatV), (float)my_ppm->getHeight());
+					//std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
 					SceneColor tex_c = my_ppm->getPixel(s, t);
 					//std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
 					color_n = glm::vec3(color.r, color.g, color.b) * (1-blend) + glm::vec3(tex_c.r, tex_c.g, tex_c.b)*blend;
