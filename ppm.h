@@ -16,7 +16,7 @@
 #define PPM_H
 
 #include <string>
-#include "/Users/timseifert/Desktop/CS_175/a3/scene/SceneData.h"
+#include "./scene/SceneData.h"
 
 /*
 	A ppm is a simple image format.
