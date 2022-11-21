@@ -445,17 +445,6 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 	return color;
 }
 
-static inline glm::vec3 computePrimaryTexDir(glm::vec3 normal)
-{
-    glm::vec3 a = glm::cross(normal, glm::vec3(1, 0, 0));
-    glm::vec3 b = glm::cross(normal, glm::vec3(0, 1, 0));
-
-    glm::vec3 max_ab = glm::dot(a, a) < glm::dot(b, b) ? b : a;
-
-    glm::vec3 c = glm::cross(normal, glm::vec3(0, 0, 1));
-
-    return glm::normalize(glm::dot(max_ab, max_ab) < glm::dot(c, c) ? c : max_ab);
-}
 
 void MyGLCanvas::convert_xyz_to_cube_uv(float x, float y, float z, int *index, float *u, float *v)
 {
@@ -525,67 +514,76 @@ void MyGLCanvas::convert_xyz_to_cube_uv(float x, float y, float z, int *index, f
   }
 
   // Convert range from -1 to 1 to 0 to 1
-  *u = 0.5f * (uc / maxAxis + 1.0f);
-  *v = 0.5f * (vc / maxAxis + 1.0f);
+  *u = 0.25f * (uc / maxAxis + 1.0f);
+  *v = 0.25f * (vc / maxAxis + 1.0f);
 }
 
 
+
 SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
-		float blend = 0;
-		glm::vec3 color_n;
-		SceneColor tex_color_blend;
-		if(prim != nullptr && prim->material.textureMap->isUsed && !p_map.empty() && ist_min != glm::vec3(INFINITY)){
-					SceneMaterial mat = prim->material;
-					SceneFileMap* texture = mat.textureMap;
-					ppm* my_ppm;
-					my_ppm = p_map[prim_m->material.textureMap->filename];
-					blend = mat.blend;
-					float u = 0;
-					float v = 0;
-					float s = 0;
-					float t = 0;
-					glm::vec3 v_cor;
-					glm::vec3 u_cor;
-					glm::vec3 n;
-					float rawU;
-					float theta;
-					int index = 0;
-					//std::cout << " here" << std::endl;
-					switch (prim->type) {
-					case SHAPE_CUBE:
-						convert_xyz_to_cube_uv(ist_min.x, ist_min.y, ist_min.z, &index, &u, &v);
-						// std::cout << "u " << u << " v " << v << std::endl;
- 						break;
-					case SHAPE_CYLINDER:
-					 	theta = .5 + atan2(ist_min.x, ist_min.z);
-        				rawU = theta / (2.0f * PI);
-        				u = 1 - (rawU + 0.5);
-       					v = fmod(.5 + ist_min[1], 1);
-						break;
-					case SHAPE_CONE:
-						break;
-					case SHAPE_SPHERE:
-						u = 0.5 + (atan2(ist_min.x, ist_min.z) / (2.0f * PI));
-						v = 0.5 + (asin(-ist_min.y * 2.0f) / PI);
-						break;
-					}
-					s = fmod((u*(float)my_ppm->getWidth()*texture->repeatU), (float)my_ppm->getWidth());
-					t = fmod((v*(float)my_ppm->getHeight()*texture->repeatV), (float)my_ppm->getHeight());
-					//std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
-					SceneColor tex_c = my_ppm->getPixel(s+.5, t+.5);
-					if(tex_c.r == 0 && tex_c.g == 0 && tex_c.b == 0){
-						return color;
-					}
-					//std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
-					color_n = glm::vec3(color.r, color.g, color.b) * (1-blend) + glm::vec3(tex_c.r, tex_c.g, tex_c.b)*blend;
-				}else{
-					std::cout << "just returning color" << std::endl;
-					return color;
-				}
-				tex_color_blend.r = color_n.x;
-				tex_color_blend.g = color_n.y;
-				tex_color_blend.b = color_n.z;
-				return tex_color_blend;
+		        float blend = 0;
+        glm::vec3 color_n;
+        SceneColor tex_color_blend;
+        if(prim != nullptr && prim->material.textureMap->isUsed && !p_map.empty() && ist_min != glm::vec3(INFINITY)){
+                    SceneMaterial mat = prim->material;
+                    SceneFileMap* texture = mat.textureMap;
+                    ppm* my_ppm;
+                    my_ppm = p_map[prim_m->material.textureMap->filename];
+                    blend = mat.blend;
+                    float u = 0;
+                    float v = 0;
+                    float s = 0;
+                    float t = 0;
+                    glm::vec3 v_cor;
+                    glm::vec3 u_cor;
+                    glm::vec3 n;
+                    float rawU;
+                    float theta;
+                    int index = 0;
+                    //std::cout << " here" << std::endl;
+                    switch (prim->type) {
+                    case SHAPE_CUBE:
+                        convert_xyz_to_cube_uv(ist_min.x, ist_min.y, ist_min.z, &index, &u, &v);
+                        break;
+                    case SHAPE_CYLINDER:
+                        theta = .5 + atan2(ist_min.x, ist_min.z);
+                        rawU = theta / (2.0f * PI);
+                        u = 1 - (rawU + 0.5);
+                        v = fmod(.5 + ist_min[1], 1);
+                        //cone cap
+                        if(ist_min.y > .499 || ist_min.y < -.499){
+                            theta = atan2(ist_min.z, ist_min.x);
+                            if(theta < 0){
+                                u = -theta / (2.0f * PI);
+                            }else{
+                                u = theta / (2.0f * PI);
+                            }
+                            
+                        }
+                        break;
+                    case SHAPE_CONE:
+                        break;
+                    case SHAPE_SPHERE:
+                        u = 0.5 + (atan2(ist_min.x, ist_min.z) / (2.0f * PI));
+                        v = 0.5 + (asin(-ist_min.y * 2.0f) / PI);
+                        break;
+                    }
+                    s = fmod((u*(float)my_ppm->getWidth()*texture->repeatU), (float)my_ppm->getWidth());
+                    t = fmod((v*(float)my_ppm->getHeight()*texture->repeatV), (float)my_ppm->getHeight());
+                    //std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
+                    SceneColor tex_c = my_ppm->getPixel(s+.5, t+.5);
+                    if(tex_c.r == 0 && tex_c.g == 0 && tex_c.b == 0){
+                        return color;
+                    }
+                    //std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
+                    color_n = glm::vec3(color.r, color.g, color.b) * (1-blend) + glm::vec3(tex_c.r, tex_c.g, tex_c.b)*blend;
+                }else{
+                    return color;
+                }
+                tex_color_blend.r = color_n.x;
+                tex_color_blend.g = color_n.y;
+                tex_color_blend.b = color_n.z;
+                return tex_color_blend;
 }
 
 glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
@@ -600,22 +598,16 @@ glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 			return glm::vec3(inst[0], 0, inst[2]);
 		}else if (shape == SHAPE_CUBE){
             if (inst[0] > inr)
-				cube_n = glm::vec3(1, 0, 0);
                 return glm::vec3(1, 0, 0);
             if (inst[0] < -inr)
-				cube_n = glm::vec3(-1, 0, 0);
                 return glm::vec3(-1, 0, 0);
             if (inst[1] > inr)
-				cube_n = glm::vec3(0, 1, 0);
                 return glm::vec3(0, 1, 0);
             if (inst[1] < -inr)
-				cube_n = glm::vec3(0, -1, 0);
                 return glm::vec3(0, -1, 0);
             if (inst[2] > inr)
-				cube_n = glm::vec3(0, 0, 1);
                 return glm::vec3(0, 0, 1);
             if (inst[2] < -inr)
-				cube_n = glm::vec3(0, 0, -1);
                 return glm::vec3(0, 0, -1);
 		}else if (shape == SHAPE_SPHERE){
            return glm::vec3(inst[0], inst[1], inst[2]);
