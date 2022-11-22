@@ -7,6 +7,93 @@
 int Shape::m_segmentsX;
 int Shape::m_segmentsY;
 
+struct MyGLCanvas::nearestObj near_ist;
+
+
+MyGLCanvas::nearestObj MyGLCanvas::findNearestIntersection(glm::vec3 eye_pnt, glm::vec3 ray){
+			float t_min = FLT_MAX;
+			nearestObj obj;
+    		obj.t = -1;
+			for (pair<ScenePrimitive*, vector<SceneTransformation*>> my_p : my_scene_vals) {
+				// std::cout << "here" << std::endl;
+					ScenePrimitive* prim = my_p.first;
+					float t = -1;
+					glm::mat4 m = glm::mat4(1.0);
+					// loop through transformations on each prim creating the matrix
+					for (SceneTransformation* my_trans : my_p.second) {
+						switch (my_trans->type) {
+							case(TRANSFORMATION_TRANSLATE):
+								m = m * glm::translate(glm::mat4(1.0), my_trans->translate);
+								break;
+							case(TRANSFORMATION_SCALE):
+								m = m * glm::scale(glm::mat4(1.0), my_trans->scale);
+								break;
+							case(TRANSFORMATION_ROTATE):
+								//std::cout << my_trans->angle << std::endl;
+								m = m * glm::rotate(glm::mat4(1.0), my_trans->angle, my_trans->rotate);
+								break;
+							case(TRANSFORMATION_MATRIX):
+								m = m * my_trans->matrix;
+								break;
+						}
+					}
+					glm::vec3 center = glm::vec3(0.0f);
+					switch (prim->type) {
+					case SHAPE_CUBE:
+						t = intersectCube(eye_pnt, ray, m, center);
+						break;
+					case SHAPE_CYLINDER:
+						t = intersectCylinder(eye_pnt, ray, m, center);
+						break;
+					case SHAPE_CONE:
+						t = intersectCone(eye_pnt, ray, m, center);
+						break;
+					case SHAPE_SPHERE:
+						t = intersectSphere(eye_pnt, ray, m, center);
+						break;
+					}
+				
+					if (t > 0.01 && (t_min < 0 || t < t_min)) {
+						        obj.t = t;
+								obj.prim = prim;
+								obj.m_inv = m;
+					}
+
+				}
+			// if(obj.t != -1){
+			// std:cout << obj.prim->type << std::endl;
+			// }
+			return obj;
+} 
+
+SceneColor MyGLCanvas::findColor (nearestObj obj, glm::vec3 eye_pnt, glm::vec3 ray) {
+
+	glm::vec3 intersection_obj = glm::vec3(0);
+	glm::vec3 intersection = glm::vec3(0);
+    float t_min = obj.t;
+	ScenePrimitive* prim = obj.prim;
+    glm::mat4 m = obj.m_inv;
+    SceneColor color;
+
+	if (t_min < 0) {
+        color.r = 0;
+        color.g = 0;
+        color.b = 0;
+        color.a = 0;
+        return color;
+	}
+
+
+	intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
+	glm::vec3 normal = computeNormal(intersection_obj, prim->type);
+	ist_min = intersection_obj; 
+	normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
+	intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
+	color = computeColor(obj.prim, normal, intersection);
+
+    return color;
+}
+
 MyGLCanvas::MyGLCanvas(int x, int y, int w, int h, const char *l) : Fl_Gl_Window(x, y, w, h, l) {
 	mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
 	
@@ -332,6 +419,9 @@ SceneColor MyGLCanvas::bound(SceneColor c) {
     if (c.r > 1.0) c.r = 1.0;
     if (c.g > 1.0) c.g = 1.0;
     if (c.b > 1.0) c.b = 1.0;
+	if (c.r < 0) c.r = 0.0;
+	if (c.g < 0) c.g = 0.0;
+	if (c.b < 0) c.b = 0.0;
     return c;
 }
 
@@ -343,7 +433,8 @@ bool MyGLCanvas::shadowCheck(glm::vec3 pos, glm::vec3 Lhati){
 	return hit;
 }
 
-SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos, glm::vec3 ray) {
+SceneColor MyGLCanvas::computeColor(ScenePrimitive* p_m, glm::vec3 Nhat, glm::vec3 pos) {
+	SceneMaterial material = p_m->material;
 	SceneGlobalData data;
 	parser->getGlobalData(data);
 	SceneColor color;
@@ -362,17 +453,17 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 	float ka = data.ka;
 	float ks = data.ks;
 	float kd = data.kd;
-	SceneColor Oa = material.cAmbient;
-	SceneColor Os = material.cSpecular;
-	SceneColor Od = material.cDiffuse;
-	SceneColor Or = material.cReflective;
+	SceneColor Oa = bound(material.cAmbient);
+	SceneColor Os = bound(material.cSpecular);
+	SceneColor Od = bound(material.cDiffuse);
+	SceneColor Or = bound(material.cReflective);
 	float shininess = material.shininess;
 	// best attempt at doing the lighting equation
 	// iterate through the lights and perform the equation in the handout
 	SceneLightData lData;
     for (int m = 0; m < parser->getNumLights(); m++) {
 		parser->getLightData(m, lData);
-        SceneColor li = lData.color;
+        SceneColor li = bound(lData.color);
         glm::vec3 Lhati;
 		if(lData.type == LIGHT_DIRECTIONAL){
 			Lhati = glm::vec3(-lData.dir.x, -lData.dir.y, -lData.dir.z);
@@ -384,6 +475,7 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 			continue;
 		}
         Lhati = glm::normalize(Lhati);
+		glm::vec3 Lvec  = pos - lData.pos;
 		glm::vec3 Ri = glm::normalize(Lhati - (2.0f * glm::dot(Lhati, Nhat) * Nhat));
 		float RiV = glm::dot(Ri, glm::normalize(camera->getLookVector()));
 
@@ -391,17 +483,20 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 			color.r += li.r * (kd * Od.r * dot(Nhat, Lhati) + (ks * Os.r) * pow(RiV, shininess));
 			color.g += li.g * (kd * Od.g * dot(Nhat, Lhati) + (ks * Os.g) * pow(RiV, shininess));
 			color.b += li.b * (kd * Od.b * dot(Nhat, Lhati) + (ks * Os.b) * pow(RiV, shininess));
-        }
+            }
     }
+	color = bound(color);
 
+	// color = textureMap(color, prim_m);
 
 	SceneColor Ir;
-    if (depth_fresh > 0){
+    if (depth_fresh > 0 && !material.textureMap->isUsed){
 		// std::cout << "recursing" << std::endl;
         depth_fresh--;
         glm::vec3 d = Vhat - 2 * (glm::dot(Vhat, Nhat)) * Nhat;
-         d = glm::normalize(d);
+        d = glm::normalize(d);
 		int hit = 0;
+		//Ir = findColor(findNearestIntersection(pos, d), pos, d);
         Ir = loopObjects(my_scene_vals, pos, d, &hit, false);
 		Ir = bound(Ir);
     } else { 
@@ -414,8 +509,8 @@ SceneColor MyGLCanvas::computeColor(SceneMaterial material, glm::vec3 Nhat, glm:
 
     color.r += ka * (Oa.r) + ks * Or.r * Ir.r;
     color.g += ka * (Oa.g)+ ks * Or.g * Ir.g;
-    color.b += ka * (Oa.b)+ + ks * Or.b * Ir.b;
-
+    color.b += ka * (Oa.b)+  ks * Or.b * Ir.b;
+	color = bound(color);
 
 	// color.r += ka * (Oa.r);
     // color.g += ka * (Oa.g);
@@ -481,7 +576,7 @@ void MyGLCanvas::convert_xyz_to_cube_uv(float x, float y, float z, int *index, f
     // v (0 to 1) goes from +z to -z
     maxAxis = absY;
     uc = x;
-    vc = -z;
+    vc = z;
     *index = 2;
   }
   // NEGATIVE Y
@@ -490,7 +585,7 @@ void MyGLCanvas::convert_xyz_to_cube_uv(float x, float y, float z, int *index, f
     // v (0 to 1) goes from -z to +z
     maxAxis = absY;
     uc = x;
-    vc = z;
+    vc = -z;
     *index = 3;
   }
   // POSITIVE Z
@@ -554,20 +649,33 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                     case SHAPE_CYLINDER:
                         theta = .5 + atan2(ist_min.x, ist_min.z);
                         rawU = theta / (2.0f * PI);
-                        u = 1 - (rawU + 0.5);
+                        u = my_ppm->getWidth()-(1 - (rawU + 0.5));
                         v = fmod(.5 + ist_min[1], 1);
                         //cone cap
                         if(ist_min.y > .499 || ist_min.y < -.499){
-                            theta = atan2(ist_min.z, ist_min.x);
+							u = atan2(ist_min.y, ist_min.x);
                             if(theta < 0){
                                 u = -theta / (2.0f * PI);
                             }else{
                                 u = theta / (2.0f * PI);
                             }
-                            
+							v = fmod(.5 + ist_min[2], 1);;
                         }
                         break;
                     case SHAPE_CONE:
+					    theta = .5 + atan2(ist_min.x, ist_min.z);
+                        rawU = theta / (2.0f * PI);
+                        u = 1 - (rawU + 0.5);
+                        v = fmod(.5 + ist_min[1], 1);
+                        //cone cap
+                        if(ist_min.y > .499 || ist_min.y < -.499){
+                            if(theta < 0){
+                                u = -theta / (2.0f * PI);
+                            }else{
+                                u = theta / (2.0f * PI);
+                            }
+							v = .5f * (ist_min.z / fabs(ist_min.y) + 1.0f);;
+                        }
                         break;
                     case SHAPE_SPHERE:
                         u = 0.5 + (atan2(ist_min.x, ist_min.z) / (2.0f * PI));
@@ -578,7 +686,7 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                     s = fmod((u*(float)my_ppm->getWidth()*texture->repeatU), (float)my_ppm->getWidth());
                     t = fmod((v*(float)my_ppm->getHeight()*texture->repeatV), (float)my_ppm->getHeight());
                     // std::cout << "s: " << s <<  " " << t << " " << t << std::endl;
-                    SceneColor tex_c = my_ppm->getPixel(s, t);
+					SceneColor tex_c = my_ppm->getPixel(s, my_ppm->getHeight()-t);
                     if(tex_c.r == 0 && tex_c.g == 0 && tex_c.b == 0){
                         return color;
                     }
@@ -619,12 +727,7 @@ glm::vec3 MyGLCanvas::computeNormal(glm::vec3 inst, OBJ_TYPE shape) {
 		}else if (shape == SHAPE_SPHERE){
            return glm::vec3(inst[0], inst[1], inst[2]);
 		}else if(shape == SHAPE_CONE){
-			//std::cout << inst[1] << std::endl;
-			// std::cout << "here" << std::endl;
-			// if (inst[1] > inr)
-            //     return glm::vec3(0, 1, 0);
 		    if (inst[1] < -inr)
-				//std::cout << "at: " << inst[0] << " " << inst[1] << " " << inst[2] << std::endl;
                  return glm::vec3(0, -1, 0);
            glm::vec3 vec1 = glm::vec3(inst[0], 0, inst[2]);
            vec1 = glm::normalize(vec1);
@@ -665,15 +768,18 @@ void MyGLCanvas::traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<
 }
 
 SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit, bool shadow_check){
-	        glm::vec3 intersection_obj = glm::vec4(0);
-			glm::vec4 intersection = glm::vec4(0);
+	        glm::vec3 intersection_obj = glm::vec3(0);
+			glm::vec3 intersection = glm::vec3(0);
+			glm::vec3 normal = glm::vec3(0);
 			SceneColor color;
+
+			ScenePrimitive* prim;
 			color.r = 0, color.g = 0, color.b = 0;
 			*hit = false;
 			float t_min = FLT_MAX;
 			for (pair<ScenePrimitive*, vector<SceneTransformation*>> my_p : my_scene_vals) {
 				// std::cout << "here" << std::endl;
-					ScenePrimitive* prim = my_p.first;
+					prim = my_p.first;
 					float t = -1;
 					glm::mat4 m = glm::mat4(1.0);
 					// loop through transformations on each prim creating the matrix
@@ -716,18 +822,20 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 							return color;
 						}
 						t_min = t;
+						prim_m = prim;
+						
 						//object coordinates intersection
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
-						glm::vec3 normal = computeNormal(intersection_obj, prim->type);
 						ist_min = intersection_obj; 
-						prim_m = prim;
-						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
-						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
-						color = computeColor(prim->material, normal, intersection, ray);
+						normal = computeNormal(intersection_obj, prim->type);
+						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); 
+						intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
 					}
-
 				}
+				if(t_min != FLT_MAX){
+				color = computeColor(prim_m, normal, intersection);
 				color = textureMap(color, prim_m);
+				}
 				return color;
 }
 
@@ -771,6 +879,9 @@ void MyGLCanvas::renderScene() {
 				//TODO: this is where your ray casting will happen!
 				glm::vec3 ray = generateRay(i, j);
 				depth_fresh = depth;
+				// color = findColor(findNearestIntersection(eye_pnt, ray), eye_pnt, ray);
+				// setpixel(pixels, i, j, color.r, color.g, color.b);
+
 				color = loopObjects(my_scene_vals, eye_pnt, ray, &hit, false);
                 if (hit) {
                     if (isectOnly == 1) {
@@ -783,13 +894,6 @@ void MyGLCanvas::renderScene() {
                 else {
                     setpixel(pixels, i, j, 0, 0, 0);
                 }
-
-				// if (isectOnly == 1) {
-				// 	setpixel(pixels, i, j, color.r, color.g, color.b);
-				// }
-				// else {
-				// 	setpixel(pixels, i, j, 255, 255, 255);
-				// }
 			}
 		}
 	std::cout << "render complete" << endl;

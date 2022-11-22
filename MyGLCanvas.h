@@ -24,6 +24,13 @@
 
 class MyGLCanvas : public Fl_Gl_Window {
 public:
+
+	struct nearestObj {
+				float t;
+				ScenePrimitive* prim; 
+				glm::mat4 m_inv;
+	};
+
 	glm::vec3 rotVec;
 	glm::vec3 eyePosition;
 	GLubyte* pixels = NULL;
@@ -62,7 +69,7 @@ public:
 	void setSegments();
 	void loadSceneFile(const char* filenamePath);
 	void renderScene();
-	SceneColor computeColor(SceneMaterial material, glm::vec3 Nhat, glm::vec3 pos, glm::vec3 ray);
+	SceneColor computeColor(ScenePrimitive* p_m, glm::vec3 Nhat, glm::vec3 pos);
 	glm::vec3 computeNormal(glm::vec3 inst, OBJ_TYPE shape);
 	void traverse1(SceneNode* root, vector<pair<ScenePrimitive*, vector<SceneTransformation*>>>& my_scene_vals, vector<SceneTransformation*> curr_trans,map<string, ppm*>* p_m);
 	float intersectCube (glm::vec3 eyePointP, glm::vec3 rayV, glm::mat4 transformMatrix, glm::vec3 cubepos);
@@ -80,8 +87,11 @@ public:
 	void convert_xyz_to_cube_uv(float x, float y, float z, int *index, float *u, float *v);
 	SceneColor loopObjects(vector<pair<ScenePrimitive*, vector<SceneTransformation*>>> my_scene_vals, glm::vec3 eye_pnt, glm::vec3 ray, int* hit, bool shadow_check);
 	float mPos(float x, float y);
+	nearestObj findNearestIntersection(glm::vec3 eye_pnt, glm::vec3 ray);
+	SceneColor findColor (nearestObj obj, glm::vec3 eye_pnt, glm::vec3 ray);
 
 private:
+
 	void setpixel(GLubyte* buf, int x, int y, int r, int g, int b);
 
 	glm::vec3 generateRay(int pixelX, int pixelY);
