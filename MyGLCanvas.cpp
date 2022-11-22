@@ -520,7 +520,7 @@ void MyGLCanvas::convert_xyz_to_cube_uv(float x, float y, float z, int *index, f
 
 
 SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
-		        float blend = 0;
+		float blend = 0;
         glm::vec3 color_n;
         SceneColor tex_color_blend;
         if(prim != nullptr && prim->material.textureMap->isUsed && !p_map.empty() && ist_min != glm::vec3(INFINITY)){
@@ -718,13 +718,11 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						t_min = t;
 						//object coordinates intersection
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
-						glm::vec3 normal = computeNormal(intersection_obj, prim->type); 
-
+						glm::vec3 normal = computeNormal(intersection_obj, prim->type);
+						ist_min = intersection_obj; 
 						prim_m = prim;
-						//  the normal
 						normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
 						glm::vec3 intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
-						ist_min = intersection;
 						color = computeColor(prim->material, normal, intersection, ray);
 					}
 
