@@ -88,7 +88,6 @@
             <reflective r="0.8" g="0.6" b="0.6"/>
             <diffuse r=".45" g="0.7" b="0.9"/>
             <shininess value="20"/>
-            
          </object>
       </transblock>
    </object>
@@ -144,6 +143,23 @@
       </transblock>
    </object>
 
+   <object type="tree" name="lifegaurd">
+      <transblock>
+         <scale x=".15" y=".25" z=".15"/>
+         <translate x="-5.5" y="5.5" z="-4"/>
+         <object type="primitive" name="cylinder">
+            <diffuse r=".8" g="0.6" b="0"/>
+         </object>
+      </transblock>
+      <transblock>
+         <scale x=".15" y=".15" z=".15"/>
+         <translate x="-5.5" y="10.3" z="-4"/>
+         <object type="primitive" name="sphere">
+            <diffuse r="1" g="1" b="1"/>
+         </object>
+      </transblock>
+   </object>
+
    <object type="tree" name="diving">
       <transblock>
          <scale x=".3" y=".3" z=".3"/>
@@ -170,14 +186,14 @@
    <object type="tree" name="chair">
       <transblock>
          <translate x="-1.06" y=".5" z="-1.06"/>
-         <scale x=".035" y="1.2" z=".035"/>
+         <scale x=".035" y="1.2" z=".04"/>
          <object type="primitive" name="cube">
             <diffuse r="1" g=".1" b=".3"/>
          </object>
       </transblock>
       <transblock>
          <translate x="-1.26" y=".5" z="-1.06"/>
-         <scale x=".035" y="1.2" z=".035"/>
+         <scale x=".035" y="1.2" z=".04"/>
          <object type="primitive" name="cube">
             <diffuse r="1" g=".1" b=".3"/>
          </object>
@@ -304,22 +320,7 @@
          </object>
       </transblock>
    </object>
-   <object type="tree" name="lifegaurd">
-      <transblock>
-         <scale x=".15" y=".25" z=".15"/>
-         <translate x="-5.5" y="5.5" z="-4"/>
-         <object type="primitive" name="cylinder">
-            <diffuse r=".8" g="0.6" b="0"/>
-         </object>
-      </transblock>
-      <transblock>
-         <scale x=".15" y=".15" z=".15"/>
-         <translate x="-5.5" y="10.3" z="-4"/>
-         <object type="primitive" name="sphere">
-            <diffuse r="1" g="1" b="1"/>
-         </object>
-      </transblock>
-   </object>
+
    <object type="tree" name="root">
       <transblock>
          <object type="master" name="pool"/>
