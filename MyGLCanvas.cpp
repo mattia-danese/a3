@@ -3,6 +3,7 @@
 #include "MyGLCanvas.h"
 #include <glm/gtx/string_cast.hpp>
 #include <float.h>
+#include "random"
 
 int Shape::m_segmentsX;
 int Shape::m_segmentsY;
@@ -411,7 +412,6 @@ SceneColor MyGLCanvas::computeColor(ScenePrimitive* p_m, glm::vec3 Nhat, glm::ve
 		glm::vec3 Lvec  = pos - lData.pos;
 		glm::vec3 Ri = glm::normalize(Lhati - (2.0f * glm::dot(Lhati, Nhat) * Nhat));
 		float RiV = glm::dot(Ri, glm::normalize(camera->getLookVector()));
-
         if (dot(Nhat, Lhati) > 0) {
 			color.r += li.r * (kd * Od.r * dot(Nhat, Lhati) + (ks * Os.r) * pow(RiV, shininess));
 			color.g += li.g * (kd * Od.g * dot(Nhat, Lhati) + (ks * Os.g) * pow(RiV, shininess));
@@ -760,6 +760,13 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 }
 
 
+inline double random_double() {
+    static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    static std::mt19937 generator;
+    return distribution(generator);
+}
+
+
 void MyGLCanvas::renderScene() {
 	std::cout << "render button clicked!" << endl;
 
@@ -789,12 +796,16 @@ void MyGLCanvas::renderScene() {
 					traverse1(root, my_scene_vals, scenetransformations, &p_map);
 				}
 			std::cout << "traverse done!" << endl;
-
 		for (int i = 0; i < pixelWidth; i++) {
 			for (int j = 0; j < pixelHeight; j++) {
-                int hit = 0;
-				float t_min = FLT_MAX;
+				int hit = 0;
 				SceneColor color;
+				color.r = 0;
+				color.g = 0;
+				color.b = 0; 
+				SceneColor temp;
+				for (int s = 0; s < samples_per_pixel; ++s) {
+				float t_min = FLT_MAX;
 				color.r = 0, color.g = 0, color.b = 0;
 				//TODO: this is where your ray casting will happen!
 				glm::vec3 ray = generateRay(i, j);
@@ -802,7 +813,15 @@ void MyGLCanvas::renderScene() {
 				// color = findColor(findNearestIntersection(eye_pnt, ray), eye_pnt, ray);
 				// setpixel(pixels, i, j, color.r, color.g, color.b);
 
-				color = loopObjects(my_scene_vals, eye_pnt, ray, &hit, false);
+				temp = loopObjects(my_scene_vals, eye_pnt, ray, &hit, false);
+				color.r += temp.r;
+				color.g += temp.g;
+				color.b += temp.b;
+				}
+				float scale = 1.0f/(float)samples_per_pixel;
+				color.r *= scale;
+				color.g *= scale;
+				color.b *= scale;
                 if (hit) {
                     if (isectOnly == 1) {
                         setpixel(pixels, i, j, 255, 255, 255);

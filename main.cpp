@@ -40,6 +40,7 @@ public:
 	Fl_Slider* segmentsXSlider;
 	Fl_Slider* segmentsYSlider;
 	Fl_Slider* depthSlider;
+	Fl_Slider* spSlider;
 
 	Fl_Slider* rotUSlider;
 	Fl_Slider* rotVSlider;
@@ -219,6 +220,15 @@ MyAppWindow::MyAppWindow(int W, int H, const char*L) : Fl_Window(W, H, L) {
 		depthSlider->step(1);
 		depthSlider->value(canvas->depth);
 		depthSlider->callback(segmentsCB, (void*)(&(canvas->depth)));
+
+		Fl_Box *spTextbox = new Fl_Box(0, 0, pack->w() - 20, 20, "Samples Per Pixel");
+		spSlider = new Fl_Value_Slider(0, 0, pack->w() - 20, 20, "");
+		spSlider->align(FL_ALIGN_TOP);
+		spSlider->type(FL_HOR_SLIDER);
+		spSlider->bounds(0, 5);
+		spSlider->step(1);
+		spSlider->value(canvas->samples_per_pixel);
+		spSlider->callback(segmentsCB, (void*)(&(canvas->samples_per_pixel)));
 
 	buttonsPack->end();
 

@@ -39,6 +39,7 @@ public:
 	int segmentsX, segmentsY;
 	int depth;
 	int depth_fresh;
+	int samples_per_pixel;
 	float scale;
 
 	OBJ_TYPE objType;
