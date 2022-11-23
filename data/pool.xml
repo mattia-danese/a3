@@ -314,7 +314,7 @@
    <object type="tree" name="towel">
       <transblock>
          <object type="primitive" name="cube">
-            	<texture file="/Users/maddysilveira/cs175/A4/a3/data/recursiveRayDemo/image/flowers.ppm" u="1" v="1"/>
+            	<texture file="./data/recursiveRayDemo/image/flowers.ppm" u="1" v="1"/>
       			<blend value="0.4"/>
             <diffuse r=".8" g=".1" b=".5"/>
          </object>
