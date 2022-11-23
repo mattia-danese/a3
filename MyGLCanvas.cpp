@@ -568,15 +568,16 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                         v = fmod(.5 + ist_min[1], 1);
                         //cone cap
                         if(ist_min.y > .499 || ist_min.y < -.499){
-							u = atan2(ist_min.y, ist_min.x);
-                            if(theta < 0){
-                                u = -theta / (2.0f * PI);
-                            }else{
-                                u = theta / (2.0f * PI);
-                            }
-							float radius = sqrt(pow(ist_min.x, 2)+ pow(ist_min.y, 2)+ pow(ist_min.z, 2));
-							phi = acos(ist_min.y / radius);
-							v = 1 - (phi/PI);
+							// u = atan2(ist_min.y, ist_min.x);
+                            // if(theta < 0){
+                            //     u = -theta / (2.0f * PI);
+                            // }else{
+                            //     u = theta / (2.0f * PI);
+                            // }
+							// float radius = sqrt(pow(ist_min.x, 2)+ pow(ist_min.y, 2)+ pow(ist_min.z, 2));
+							// phi = acos(ist_min.y / radius);
+							// v = 1 - (phi/PI);
+                            convert_xyz_to_cube_uv(ist_min.x, ist_min.y, ist_min.z, &index, &u, &v);
                         }
                         break;
                     case SHAPE_CONE:
@@ -586,14 +587,15 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                         v = fmod(.5 + ist_min[1], 1);
                         //cone cap
                         if(ist_min.y > .499 || ist_min.y < -.499){
-                            if(theta < 0){
-                                u = -theta / (2.0f * PI);
-                            }else{
-                                u = theta / (2.0f * PI);
-                            }
-							float radius = sqrt(pow(ist_min.x, 2)+ pow(ist_min.y, 2)+ pow(ist_min.z, 2));
-							phi = acos(ist_min.y / radius);
-							v = 1 - (phi/PI);
+                            // if(theta < 0){
+                            //     u = -theta / (2.0f * PI);
+                            // }else{
+                            //     u = theta / (2.0f * PI);
+                            // }
+							// float radius = sqrt(pow(ist_min.x, 2)+ pow(ist_min.y, 2)+ pow(ist_min.z, 2));
+							// phi = acos(ist_min.y / radius);
+							// v = 1 - (phi/PI);
+                            convert_xyz_to_cube_uv(ist_min.x, ist_min.y, ist_min.z, &index, &u, &v);
                         }
                         break;
                     case SHAPE_SPHERE:
