@@ -9,91 +9,6 @@ int Shape::m_segmentsY;
 
 struct MyGLCanvas::nearestObj near_ist;
 
-
-MyGLCanvas::nearestObj MyGLCanvas::findNearestIntersection(glm::vec3 eye_pnt, glm::vec3 ray){
-			float t_min = FLT_MAX;
-			nearestObj obj;
-    		obj.t = -1;
-			for (pair<ScenePrimitive*, vector<SceneTransformation*>> my_p : my_scene_vals) {
-				// std::cout << "here" << std::endl;
-					ScenePrimitive* prim = my_p.first;
-					float t = -1;
-					glm::mat4 m = glm::mat4(1.0);
-					// loop through transformations on each prim creating the matrix
-					for (SceneTransformation* my_trans : my_p.second) {
-						switch (my_trans->type) {
-							case(TRANSFORMATION_TRANSLATE):
-								m = m * glm::translate(glm::mat4(1.0), my_trans->translate);
-								break;
-							case(TRANSFORMATION_SCALE):
-								m = m * glm::scale(glm::mat4(1.0), my_trans->scale);
-								break;
-							case(TRANSFORMATION_ROTATE):
-								//std::cout << my_trans->angle << std::endl;
-								m = m * glm::rotate(glm::mat4(1.0), my_trans->angle, my_trans->rotate);
-								break;
-							case(TRANSFORMATION_MATRIX):
-								m = m * my_trans->matrix;
-								break;
-						}
-					}
-					glm::vec3 center = glm::vec3(0.0f);
-					switch (prim->type) {
-					case SHAPE_CUBE:
-						t = intersectCube(eye_pnt, ray, m, center);
-						break;
-					case SHAPE_CYLINDER:
-						t = intersectCylinder(eye_pnt, ray, m, center);
-						break;
-					case SHAPE_CONE:
-						t = intersectCone(eye_pnt, ray, m, center);
-						break;
-					case SHAPE_SPHERE:
-						t = intersectSphere(eye_pnt, ray, m, center);
-						break;
-					}
-				
-					if (t > 0.01 && (t_min < 0 || t < t_min)) {
-						        obj.t = t;
-								obj.prim = prim;
-								obj.m_inv = m;
-					}
-
-				}
-			// if(obj.t != -1){
-			// std:cout << obj.prim->type << std::endl;
-			// }
-			return obj;
-} 
-
-SceneColor MyGLCanvas::findColor (nearestObj obj, glm::vec3 eye_pnt, glm::vec3 ray) {
-
-	glm::vec3 intersection_obj = glm::vec3(0);
-	glm::vec3 intersection = glm::vec3(0);
-    float t_min = obj.t;
-	ScenePrimitive* prim = obj.prim;
-    glm::mat4 m = obj.m_inv;
-    SceneColor color;
-
-	if (t_min < 0) {
-        color.r = 0;
-        color.g = 0;
-        color.b = 0;
-        color.a = 0;
-        return color;
-	}
-
-
-	intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
-	glm::vec3 normal = computeNormal(intersection_obj, prim->type);
-	ist_min = intersection_obj; 
-	normal = glm::normalize(glm::vec3(glm::transpose(glm::inverse(m)) * glm::vec4(normal,1))); // shouldn't this be glm::vec4(normal,0) since normal is a vector
-	intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
-	color = computeColor(obj.prim, normal, intersection);
-
-    return color;
-}
-
 MyGLCanvas::MyGLCanvas(int x, int y, int w, int h, const char *l) : Fl_Gl_Window(x, y, w, h, l) {
 	mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
 	
@@ -461,6 +376,24 @@ SceneColor MyGLCanvas::computeColor(ScenePrimitive* p_m, glm::vec3 Nhat, glm::ve
 	// best attempt at doing the lighting equation
 	// iterate through the lights and perform the equation in the handout
 	SceneLightData lData;
+
+		SceneColor Ir;
+    if (depth_fresh > 0 && !material.textureMap->isUsed){
+		// std::cout << "recursing" << std::endl;
+        depth_fresh--;
+        glm::vec3 d = Vhat - 2 * (glm::dot(Vhat, Nhat)) * Nhat;
+        d = glm::normalize(d);
+		int hit = 0;
+		//Ir = findColor(findNearestIntersection(pos, d), pos, d);
+        Ir = loopObjects(my_scene_vals, pos, d, &hit, false);
+		Ir = bound(Ir);
+    } else { 
+        Ir.r = 0;
+        Ir.g = 0;
+        Ir.b = 0;
+        Ir.a = 0;
+    }
+
     for (int m = 0; m < parser->getNumLights(); m++) {
 		parser->getLightData(m, lData);
         SceneColor li = bound(lData.color);
@@ -488,24 +421,6 @@ SceneColor MyGLCanvas::computeColor(ScenePrimitive* p_m, glm::vec3 Nhat, glm::ve
 	color = bound(color);
 
 	// color = textureMap(color, prim_m);
-
-	SceneColor Ir;
-    if (depth_fresh > 0 && !material.textureMap->isUsed){
-		// std::cout << "recursing" << std::endl;
-        depth_fresh--;
-        glm::vec3 d = Vhat - 2 * (glm::dot(Vhat, Nhat)) * Nhat;
-        d = glm::normalize(d);
-		int hit = 0;
-		//Ir = findColor(findNearestIntersection(pos, d), pos, d);
-        Ir = loopObjects(my_scene_vals, pos, d, &hit, false);
-		Ir = bound(Ir);
-    } else { 
-        Ir.r = 0;
-        Ir.g = 0;
-        Ir.b = 0;
-        Ir.a = 0;
-    }
-
 
     color.r += ka * (Oa.r) + ks * Or.r * Ir.r;
     color.g += ka * (Oa.g)+ ks * Or.g * Ir.g;
@@ -640,8 +555,8 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                     glm::vec3 n;
                     float rawU;
                     float theta;
+					float phi;
                     int index = 0;
-                    //std::cout << " here" << std::endl;
                     switch (prim->type) {
                     case SHAPE_CUBE:
                         convert_xyz_to_cube_uv(ist_min.x, ist_min.y, ist_min.z, &index, &u, &v);
@@ -659,7 +574,9 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                             }else{
                                 u = theta / (2.0f * PI);
                             }
-							v = fmod(.5 + ist_min[2], 1);;
+							float radius = sqrt(pow(ist_min.x, 2)+ pow(ist_min.y, 2)+ pow(ist_min.z, 2));
+							phi = acos(ist_min.y / radius);
+							v = 1 - (phi/PI);
                         }
                         break;
                     case SHAPE_CONE:
@@ -674,23 +591,25 @@ SceneColor MyGLCanvas::textureMap(SceneColor color, ScenePrimitive* prim){
                             }else{
                                 u = theta / (2.0f * PI);
                             }
-							v = .5f * (ist_min.z / fabs(ist_min.y) + 1.0f);;
+							float radius = sqrt(pow(ist_min.x, 2)+ pow(ist_min.y, 2)+ pow(ist_min.z, 2));
+							phi = acos(ist_min.y / radius);
+							v = 1 - (phi/PI);
                         }
                         break;
                     case SHAPE_SPHERE:
-                        u = 0.5 + (atan2(ist_min.x, ist_min.z) / (2.0f * PI));
-                        v = 0.5 + (asin(-ist_min.y * 2.0f) / PI);
+						float radius = sqrt(pow(ist_min.x, 2)+ pow(ist_min.y, 2)+ pow(ist_min.z, 2));
+						phi = acos(ist_min.y / radius);
+                        u = 1 - (atan2(ist_min.x, ist_min.z) / (2.0f * PI));
+                        v = 1 - (phi/PI);
                         break;
                     }
 					
                     s = fmod((u*(float)my_ppm->getWidth()*texture->repeatU), (float)my_ppm->getWidth());
                     t = fmod((v*(float)my_ppm->getHeight()*texture->repeatV), (float)my_ppm->getHeight());
-                    // std::cout << "s: " << s <<  " " << t << " " << t << std::endl;
 					SceneColor tex_c = my_ppm->getPixel(s, my_ppm->getHeight()-t);
                     if(tex_c.r == 0 && tex_c.g == 0 && tex_c.b == 0){
                         return color;
                     }
-                    //std::cout << "tex_c: " << tex_c.r <<  " " << tex_c.g << " " << tex_c.b << std::endl;
                     color_n = glm::vec3(color.r, color.g, color.b) * (1-blend) + glm::vec3(tex_c.r, tex_c.g, tex_c.b)*blend;
                 }else{
                     return color;
@@ -773,7 +692,7 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 			glm::vec3 normal = glm::vec3(0);
 			SceneColor color;
 
-			ScenePrimitive* prim;
+			ScenePrimitive* prim = nullptr;
 			color.r = 0, color.g = 0, color.b = 0;
 			*hit = false;
 			float t_min = FLT_MAX;
@@ -823,7 +742,6 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						}
 						t_min = t;
 						prim_m = prim;
-						
 						//object coordinates intersection
 						intersection_obj = getIsectPointWorldCoord(glm::vec3(glm::inverse(m) * glm::vec4(eye_pnt,1.0f)), glm::vec3(glm::inverse(m) * glm::vec4(ray,0)), t_min);
 						ist_min = intersection_obj; 
@@ -832,9 +750,9 @@ SceneColor MyGLCanvas::loopObjects(vector<pair<ScenePrimitive*, vector<SceneTran
 						intersection = glm::vec3(m * glm::vec4(intersection_obj, 1));
 					}
 				}
-				if(t_min != FLT_MAX){
-				color = computeColor(prim_m, normal, intersection);
-				color = textureMap(color, prim_m);
+				if(t_min != FLT_MAX && prim != nullptr){
+					//std::cout << "here" << std::endl;
+					color = textureMap(computeColor(prim_m, normal, intersection), prim_m);
 				}
 				return color;
 }
